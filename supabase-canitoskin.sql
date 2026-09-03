@@ -8,7 +8,10 @@
 --      que permitan upload vía service key)
 --   2. .env: SUPABASE_URL + SUPABASE_SERVICE_KEY
 --   3. Admin: /admin — password inicial "admin123"
---      (cambiarla apenas entres)
+--      CAMBIALA apenas entres: el hash de "admin123" está en este archivo,
+--      así que es pública. El seed de la cuenta admin usa ON CONFLICT DO
+--      NOTHING (ver más abajo) — re-ejecutar este script entero es seguro,
+--      nunca pisa una contraseña que ya hayas cambiado.
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -416,8 +419,12 @@ on conflict (slug) do update set
   plan = 'canito',
   estado = 'activo';
 
--- Admin password inicial: admin123 (scrypt, mismos params que el server)
--- CAMBIAR en cuanto puedas desde el panel.
+-- Admin password inicial: admin123 (scrypt, mismos params que el server).
+-- CAMBIAR en cuanto puedas desde el panel — es un hash público (está en este
+-- repo), tratalo como comprometido apenas lo uses.
+-- ON CONFLICT DO NOTHING a propósito: este script se puede re-ejecutar entero
+-- sin miedo (setup nuevo, disaster recovery). Si ya existe un admin para este
+-- negocio, esta sentencia no lo toca — nunca pisa una contraseña ya cambiada.
 insert into business_admins (
   business_id, password_salt, password_hash, actualizado_en
 )
@@ -427,10 +434,7 @@ select b.id,
   now()::text
 from businesses b
 where b.slug = 'canito'
-on conflict (business_id) do update set
-  password_salt = excluded.password_salt,
-  password_hash = excluded.password_hash,
-  actualizado_en = excluded.actualizado_en;
+on conflict (business_id) do nothing;
 
 -- Profesional inicial: Cande
 insert into professionals (business_id, nombre, especialidad, activo)
