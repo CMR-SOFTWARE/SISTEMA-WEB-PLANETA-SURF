@@ -738,6 +738,12 @@ function requireAdmin(req, res, next) {
   if (!parsed || parsed.businessId !== req.business.id) {
     return res.status(401).json({ error: "No autorizado." });
   }
+  if (req.method !== "GET") {
+    const slug = req.business.slug;
+    res.on("finish", () => {
+      if (res.statusCode < 400) invalidateBusinessCache(slug);
+    });
+  }
   return next();
 }
 
@@ -1614,7 +1620,33 @@ function mapBloqueoRecurrenteRow(row) {
 // ============================================================
 // BUSINESS DATA ACCESS
 // ============================================================
+// Cache corto en memoria: getBusinessBySlug se llama en CADA request público
+// (config, productos-destacados, videos, galeria, etc. vía resolveBusiness) y
+// hace varios round-trips a Supabase (negocio + profesionales/servicios/planes
+// + vínculos). Con esto, varias llamadas dentro de la misma ventana de carga
+// de página reusan el mismo resultado en vez de repetir las queries.
+// Se invalida automáticamente en cada escritura admin (ver requireAdmin).
+const BUSINESS_CACHE_TTL_MS = 20_000;
+const businessCache = new Map();
+
+function invalidateBusinessCache(slug) {
+  if (!slug) return;
+  businessCache.delete(`${slug}::true`);
+  businessCache.delete(`${slug}::false`);
+}
+
 async function getBusinessBySlug(slug, { onlyActivo = true } = {}) {
+  const cacheKey = `${slug}::${onlyActivo}`;
+  const cached = businessCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value ? { ...cached.value } : null;
+  }
+  const value = await getBusinessBySlugUncached(slug, { onlyActivo });
+  businessCache.set(cacheKey, { value, expiresAt: Date.now() + BUSINESS_CACHE_TTL_MS });
+  return value ? { ...value } : null;
+}
+
+async function getBusinessBySlugUncached(slug, { onlyActivo = true } = {}) {
   if (USE_SQLITE) {
     const row = onlyActivo
       ? await dbGet("SELECT * FROM businesses WHERE slug = ? AND estado = 'activo' LIMIT 1", [slug])

@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+@source "../public/**/*.html";
+@source "../public/**/*.js";
+
+/* globals.css entra en @layer base para compartir el mismo sistema de
+   cascade layers que Tailwind v4: las utilidades (@layer utilities) siguen
+   ganando sobre estos estilos base, igual que con clases sin layer. */
+@import "../public/globals.css" layer(base);

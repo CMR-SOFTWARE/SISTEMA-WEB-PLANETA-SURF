@@ -4,7 +4,8 @@
   "description": "Canito Skin — plataforma de turnos, market y admin (San Nicolás)",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "build:css": "tailwindcss -i ./src/tailwind-input.css -o ./public/tailwind-build.css --minify"
   },
   "keywords": [
     "turnos",
@@ -24,6 +25,7 @@
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
     "@types/node": "^26.1.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2"
