@@ -824,11 +824,6 @@ function toAppointmentTimestamp(fecha, horaInicio) {
   return new Date(year, month - 1, day, hour, minute, 0, 0).getTime();
 }
 
-function isAppointmentExpired(appt, nowMs = Date.now()) {
-  const ms = toAppointmentTimestamp(appt.fecha, appt.horaInicio);
-  return !Number.isNaN(ms) && ms < nowMs;
-}
-
 function getBusinessOpenRanges(business) {
   const ranges = [];
   const a1 = scheduleValueToMinutes(business.horaInicio);
@@ -1816,26 +1811,6 @@ async function readAppointments({ businessId, fecha = "", professionalId = undef
   return rows.map(mapAppointmentRow);
 }
 
-async function purgeExpiredAppointments(businessId) {
-  const nowMs = Date.now();
-  const appointments = await readAppointments({ businessId, includeCanceladas: true });
-  const expiradas = appointments.filter((a) => a.estado !== "cancelada" && isAppointmentExpired(a, nowMs));
-  if (!expiradas.length) return 0;
-  const ids = expiradas.map((a) => Number(a.id)).filter((id) => Number.isFinite(id));
-  if (!ids.length) return 0;
-
-  if (USE_SUPABASE) {
-    const archivos = expiradas.map((a) => a.comprobante?.archivo).filter(Boolean);
-    if (archivos.length) await supabase.storage.from(SUPABASE_BUCKET).remove(archivos);
-    const { error } = await supabase.from("appointments").delete().in("id", ids);
-    if (error) throw new Error(error.message);
-    return ids.length;
-  }
-  const placeholders = ids.map(() => "?").join(", ");
-  await dbRun(`DELETE FROM appointments WHERE id IN (${placeholders})`, ids);
-  return ids.length;
-}
-
 async function readBloqueosRecurrentes({ businessId, professionalId = undefined } = {}) {
   if (USE_SUPABASE) {
     let query = supabase.from("bloqueos_recurrentes").select("*").eq("activo", true).order("dia_semana", { ascending: true });
@@ -2448,8 +2423,6 @@ app.get("/api/:slug/mis-reservas", resolveBusiness, async (req, res, next) => {
 
 app.post("/api/:slug/reservas", resolveBusiness, upload.single("comprobante"), async (req, res, next) => {
   try {
-    await purgeExpiredAppointments(req.business.id);
-
     const nombre = (req.body?.nombre || "").trim();
     const telefono = (req.body?.telefono || "").trim();
     const fecha = (req.body?.fecha || "").trim();
@@ -2685,7 +2658,6 @@ app.post("/api/:slug/admin/login", resolveBusiness, async (req, res, next) => {
 // ============================================================
 app.get("/api/:slug/admin/reservas", resolveBusiness, requireAdmin, async (req, res, next) => {
   try {
-    await purgeExpiredAppointments(req.business.id);
     const fecha = (req.query.fecha || "").trim();
     const appointments = await readAppointments({
       businessId: req.business.id,
@@ -2711,7 +2683,6 @@ app.get("/api/:slug/admin/reservas", resolveBusiness, requireAdmin, async (req, 
 /** Snapshot liviano para panel en tiempo real (una sola request). */
 app.get("/api/:slug/admin/live", resolveBusiness, requireAdmin, async (req, res, next) => {
   try {
-    await purgeExpiredAppointments(req.business.id);
     const fecha = (req.query.fecha || "").trim();
     const [appointments, bloqueos, bloqueosRecurrentes, movimientosRaw] = await Promise.all([
       readAppointments({

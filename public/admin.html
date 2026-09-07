@@ -37,6 +37,7 @@
       .appt-row.is-confirmada { border-left-color: var(--success); }
       .appt-row.is-pendiente { border-left-color: var(--warning); }
       .appt-row.is-cancelada { border-left-color: var(--danger); }
+      .appt-row.is-concluida { border-left-color: var(--neutral); opacity: 0.8; }
       .pill-group {
         display: inline-flex;
         padding: 0.2rem;
@@ -157,6 +158,10 @@
       }
       .cal-head.is-cerrado {
         opacity: 0.55;
+      }
+      .cal-block.is-concluida {
+        opacity: 0.55;
+        filter: grayscale(0.4);
       }
       .cal-block.is-bloqueo {
         background: repeating-linear-gradient(
@@ -532,6 +537,7 @@
                 <option value="">Todos</option>
                 <option value="confirmada">Pagado</option>
                 <option value="pendiente">Sin cobrar</option>
+                <option value="concluida">Concluido</option>
                 <option value="cancelada">Cancelada</option>
               </select>
               <button id="btnFiltrarReservas" type="button" class="btn-primary px-3 py-1.5 text-sm">Filtrar</button>

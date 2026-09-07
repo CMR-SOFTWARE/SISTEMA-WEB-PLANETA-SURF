@@ -473,9 +473,29 @@
       pendiente: { cls: "badge-warning", label: "Sin cobrar" },
       confirmada: { cls: "badge-success", label: "Pagado" },
       cancelada: { cls: "badge-danger", label: "Cancelada" },
+      concluida: { cls: "badge-neutral", label: "Concluido" },
     };
     const m = map[estado] || map.pendiente;
     return `<span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${m.cls}">${m.label}</span>`;
+  }
+
+  /** Un turno "pasó" cuando su fecha+horaInicio ya quedó atrás. No se toca en la base:
+   *  es solo para mostrarlo como Concluido en vez de Pagado/Sin cobrar. */
+  function isAppointmentPast(r) {
+    const fecha = r.fecha;
+    const hora = r.horaInicio || r.horario;
+    if (!fecha || !hora) return false;
+    const [y, m, d] = fecha.split("-").map(Number);
+    const [hh, mm] = String(hora).split(":").map(Number);
+    if (![y, m, d, hh, mm].every(Number.isFinite)) return false;
+    return new Date(y, m - 1, d, hh, mm, 0, 0).getTime() < Date.now();
+  }
+
+  /** Estado a mostrar: igual al real, salvo que ya pasó y no está cancelado → "concluida". */
+  function displayEstado(r) {
+    const estado = r.estado || "pendiente";
+    if (estado !== "cancelada" && isAppointmentPast(r)) return "concluida";
+    return estado;
   }
 
   function whatsappHref(r) {
@@ -876,7 +896,7 @@
   }
 
   function renderMiniTurno(r, { showDate = false } = {}) {
-    const estado = r.estado || "pendiente";
+    const estado = displayEstado(r);
     const meta = showDate
       ? `${formatFecha(r.fecha)} · ${horaLabel(r)} · ${serviceName(r)} · ${professionalName(r)}`
       : `${horaLabel(r)} · ${serviceName(r)} · ${professionalName(r)}`;
@@ -954,7 +974,7 @@
     const estado = $("filtroEstado")?.value || "";
     return reservasActuales.filter((r) => {
       if (fecha && r.fecha !== fecha) return false;
-      if (estado && r.estado !== estado) return false;
+      if (estado && displayEstado(r) !== estado) return false;
       return true;
     });
   }
@@ -971,9 +991,10 @@
     }
     list.innerHTML = items
       .map((r) => {
-        const canModify = r.estado === "pendiente" || r.estado === "confirmada";
+        const past = isAppointmentPast(r);
+        const canModify = (r.estado === "pendiente" || r.estado === "confirmada") && !past;
         const canCancel = r.estado === "pendiente" || r.estado === "confirmada";
-        const estado = r.estado || "pendiente";
+        const estado = displayEstado(r);
         return `
         <article class="appt-row is-${escapeHtml(estado)}">
           <div class="flex flex-wrap items-start justify-between gap-3">
@@ -1487,12 +1508,13 @@
 
             dayReservas.forEach((r) => {
               const color = proColorFromId(r.professionalId ?? serviceName(r));
-              const estadoTag = r.estado === "pendiente" ? " · pend." : "";
+              const concluida = isAppointmentPast(r);
+              const estadoTag = concluida ? " · concluido" : r.estado === "pendiente" ? " · pend." : "";
               const svc = serviceName(r);
               const proNom = r.professionalId != null ? professionalName(r) : "";
-              const titleBits = [r.nombre, svc, proNom, r.estado].filter(Boolean).join(" · ");
+              const titleBits = [r.nombre, svc, proNom, concluida ? "concluida" : r.estado].filter(Boolean).join(" · ");
               blocks.push(`
-                <div class="cal-block" style="background:${color}" title="${escapeHtml(titleBits)}">
+                <div class="cal-block${concluida ? " is-concluida" : ""}" style="background:${color}" title="${escapeHtml(titleBits)}">
                   <strong>${escapeHtml(r.horaInicio || r.horario || "")}</strong> ${escapeHtml(r.nombre)}${estadoTag}
                   ${svc ? `<span class="cal-block-meta">${escapeHtml(svc)}${proNom && !proFilter ? ` · ${escapeHtml(proNom)}` : ""}</span>` : ""}
                 </div>`);

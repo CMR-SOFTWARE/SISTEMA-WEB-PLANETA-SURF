@@ -2,6 +2,22 @@
 
 Registro de cambios y correcciones. Formato: fecha, qué se hizo, por qué, archivos tocados.
 
+## 2026-09-07
+
+### fix(critical): se dejó de borrar turnos automáticamente al pasar su horario
+
+- **Qué**: `purgeExpiredAppointments` (antes en `server/index.js`) borraba de la base — `DELETE` real, más el archivo de comprobante en Supabase Storage — cualquier turno no cancelado (`pendiente` o `confirmada`) apenas pasaba su horario. Corría en 3 lugares: al crear una reserva pública, al abrir la Agenda del admin, y en el polling en vivo del dashboard (cada 2.5s). En la práctica, cualquier turno ya ocurrido desaparecía de la base en segundos, comprobante de pago incluido. Se eliminó la función entera y sus 3 llamados.
+- **Por qué**: surgió al pedirme una sección de "turnos que pasaron/concluyeron" en la Agenda — no se podía construir porque esos datos ya no existían. El texto de la UI ("si no se transfiere ese monto, el turno se cancela automáticamente") sugiere que la intención original era cancelar reservas pendientes sin pagar para liberar el horario, pero el filtro no distinguía `pendiente` de `confirmada`, y usaba `DELETE` en vez de marcar `cancelada`. Además esa liberación de horario no hacía falta: crear una reserva ya rechaza horarios pasados (`toAppointmentTimestamp(...) < Date.now()`), así que un slot vencido nunca se puede volver a reservar exista o no el registro viejo.
+- **Impacto real**: turnos ya ocurridos anteriores a este fix se perdieron (`DELETE`, no soft-delete). Recuperación parcial posible vía la tabla `movimientos` (no se tocó, tiene servicio/nombre/fecha/monto de los turnos que se cobraron) o vía un backup de Supabase restaurado a un proyecto nuevo — decisión del negocio, no ejecutable desde acá.
+- **Archivos**: `server/index.js` (eliminadas `isAppointmentExpired`, `purgeExpiredAppointments` y sus 3 llamados).
+
+### feat: turnos concluidos visibles en la lista y el calendario de Agenda
+
+- **Qué**: agregado un estado derivado `"concluida"` — puramente de UI, no se guarda en la base — para cualquier turno no cancelado cuya fecha+hora ya pasó (`isAppointmentPast` / `displayEstado` en `admin.js`). Se ve como badge "Concluido" (gris, `badge-neutral`) en la lista, como nueva opción en el filtro de Estado, y atenuado (opacidad reducida) en los bloques del calendario semanal. El botón "Modificar horario" se deshabilita para turnos concluidos (no tiene sentido reagendar algo que ya pasó); "Cancelar" se mantiene disponible por si hace falta marcar un no-show.
+- **Por qué**: pedido explícito — ver en la Agenda (lista y calendario) los turnos que ya pasaron/se hicieron, distinto de los próximos.
+- **Verificado**: lógica de `isAppointmentPast`/`displayEstado` probada de forma aislada con 5 casos (pasado/futuro × confirmada/pendiente/cancelada/sin-hora) — todos correctos. No se pudo probar visualmente con datos reales porque el entorno local apunta a la Supabase de producción y el slug no resuelve ahí; revisar en el panel real después de deployar.
+- **Archivos**: `public/admin.js` (`estadoBadge`, `isAppointmentPast`, `displayEstado`, `filteredReservas`, `renderReservas`, `renderMiniTurno`, `renderCalendario`), `public/admin.html` (opción de filtro "Concluido", CSS `.appt-row.is-concluida` y `.cal-block.is-concluida`).
+
 ## 2026-09-03
 
 ### fix: caché en memoria para datos de negocio (performance)
