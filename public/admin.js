@@ -2870,7 +2870,7 @@
         const montoTxt = `${isGasto ? "−" : "+"} ${formatMoney(m.monto)}`;
         return `
         <tr class="border-b border-border last:border-0 align-top">
-          <td class="px-4 py-3 whitespace-nowrap">${escapeHtml(m.fecha || "—")}</td>
+          <td class="px-4 py-3 whitespace-nowrap">${escapeHtml(formatFecha(m.fecha))}</td>
           <td class="px-4 py-3">
             <span class="mov-badge ${isGasto ? "is-gasto" : "is-ingreso"}">${isGasto ? "Gasto" : "Ingreso"}</span>
           </td>
