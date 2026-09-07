@@ -816,12 +816,19 @@ function rangesOverlap(start, end, otherStart, otherEnd) {
   return start < otherEnd && otherStart < end;
 }
 
+// Argentina no usa horario de verano desde 2009: UTC-3 fijo todo el año.
+const ARGENTINA_UTC_OFFSET_MS = 3 * 60 * 60 * 1000;
+
 function toAppointmentTimestamp(fecha, horaInicio) {
   if (!fecha || !horaInicio) return NaN;
   const [year, month, day] = String(fecha).split("-").map(Number);
   const [hour = 0, minute = 0] = String(horaInicio).split(":").map(Number);
   if ([year, month, day, hour, minute].some((v) => !Number.isFinite(v))) return NaN;
-  return new Date(year, month - 1, day, hour, minute, 0, 0).getTime();
+  // fecha/horaInicio representan hora local de Argentina; Date.UTC() más el
+  // offset fijo evita depender del timezone del proceso (Vercel corre en UTC,
+  // así que new Date(y,m,d,h,mi) local interpretaba "18:00" como 18:00 UTC =
+  // 15:00 Argentina, adelantando el "vencimiento" del turno 3 horas).
+  return Date.UTC(year, month - 1, day, hour, minute, 0, 0) + ARGENTINA_UTC_OFFSET_MS;
 }
 
 function getBusinessOpenRanges(business) {

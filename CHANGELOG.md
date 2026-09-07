@@ -4,6 +4,13 @@ Registro de cambios y correcciones. Formato: fecha, qué se hizo, por qué, arch
 
 ## 2026-09-07
 
+### fix(critical): turnos se consideraban vencidos 3 horas antes de tiempo (timezone)
+
+- **Qué**: `toAppointmentTimestamp` (`server/index.js`) construía la hora del turno con `new Date(year, month-1, day, hour, minute)`, que se interpreta en el timezone del proceso — Vercel corre en UTC por defecto. Como Argentina es UTC-3, un turno anotado "18:00" (hora local) se evaluaba como 18:00 UTC = 15:00 hora argentina real. Resultado: el sistema consideraba "vencido" cualquier turno 3 horas antes de que en realidad pasara. Se cambió a `Date.UTC(...) + 3h` fijo (Argentina no usa horario de verano desde 2009), independiente del timezone del proceso.
+- **Por qué**: descubierto al recuperar los turnos borrados de hoy (7/9) — varios de los borrados NO habían concluido todavía en la realidad cuando la purga (ya sacada) los eliminó. Verificado con una simulación: con hora real argentina 14:00, el código viejo marcaba como vencidos turnos de las 14:00 y las 16:00 (a este le faltaban 2 horas), mientras que el código nuevo los marca correctamente como no vencidos.
+- **Impacto adicional (todavía activo hasta este fix)**: la misma función se usa para rechazar reservas en horarios pasados (`POST /api/:slug/reservas`). Un cliente reservando un turno para dentro de las próximas ~3 horas podía recibir "Ese horario ya pasó" de forma incorrecta, todos los días.
+- **Archivos**: `server/index.js` (`toAppointmentTimestamp`).
+
 ### fix(critical): se dejó de borrar turnos automáticamente al pasar su horario
 
 - **Qué**: `purgeExpiredAppointments` (antes en `server/index.js`) borraba de la base — `DELETE` real, más el archivo de comprobante en Supabase Storage — cualquier turno no cancelado (`pendiente` o `confirmada`) apenas pasaba su horario. Corría en 3 lugares: al crear una reserva pública, al abrir la Agenda del admin, y en el polling en vivo del dashboard (cada 2.5s). En la práctica, cualquier turno ya ocurrido desaparecía de la base en segundos, comprobante de pago incluido. Se eliminó la función entera y sus 3 llamados.
