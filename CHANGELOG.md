@@ -2,6 +2,19 @@
 
 Registro de cambios y correcciones. Formato: fecha, qué se hizo, por qué, archivos tocados.
 
+## 2026-09-08
+
+### feat: prefijo +54 9 fijo en los campos de teléfono de turnos
+
+- **Qué**: el input de teléfono de la reserva pública (`index.html`) y el del formulario "Agendar turno manual" del admin (`admin.html`) ahora muestran un prefijo fijo "+54 9" y solo piden código de área + número (10 dígitos, sin el 0 ni el 15). El valor real que se guarda en `appointments.telefono` sigue siendo el número completo (`549` + los 10 dígitos), armado en el cliente antes de enviarlo.
+- **Por qué**: pedido directo — la gente solo tipea el resto del número (ej. `3364589907`), no tiene sentido pedirles que agreguen el código de país a mano.
+- **Compatibilidad con datos viejos**: los turnos creados antes de este cambio tienen `telefono` guardado sin el prefijo (10 dígitos). Para no romper nada con datos mixtos:
+  - `GET /api/:slug/mis-reservas` (server/index.js) pasó de comparar `telefono` exacto a un `LIKE` por los últimos 10 dígitos — encuentra el turno sin importar si se guardó con o sin prefijo.
+  - `whatsappHref` y el link de WhatsApp de la sección Clientes (admin.js) arman el link con una función `whatsappNumber()` que antepone `549` solo si el teléfono guardado tiene exactamente 10 dígitos (formato viejo) — así el botón de WhatsApp abre el chat correcto tanto en turnos viejos como nuevos.
+  - `buildClientes()` (admin.js) agrupa por los últimos 10 dígitos en vez del string completo, para que un mismo cliente con turnos viejos y nuevos no aparezca duplicado en la lista de Clientes.
+- **Gotcha encontrado en el camino**: con `maxlength` del HTML aplicado ANTES del filtro que saca caracteres no numéricos, un caracter inválido tipeado por error restaba un dígito real sin avisar (maxlength cuenta el caracter invalido contra el límite antes de que el JS lo borre). Se sacó el `maxlength` del HTML (subido a 20, solo como tope de seguridad) y el corte real a 10 dígitos se hace en el listener de `input`, después de filtrar.
+- **Archivos**: `public/index.html`, `public/admin.html`, `public/app.js`, `public/admin.js`, `public/booking.css` (clases `.tel-group`/`.tel-prefix`), `server/index.js` (`/mis-reservas`), `public/tailwind-build.css` (regenerado).
+
 ## 2026-09-07
 
 ### fix(critical): turnos se consideraban vencidos 3 horas antes de tiempo (timezone)

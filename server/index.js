@@ -2388,6 +2388,11 @@ app.get("/api/:slug/mis-reservas", resolveBusiness, async (req, res, next) => {
     if (!telefono || telefono.length < 6 || telefono.length > 15) {
       return res.status(400).json({ error: "Teléfono inválido." });
     }
+    // Match por los ultimos 10 digitos: turnos viejos se guardaron sin
+    // prefijo de pais (549), turnos nuevos lo incluyen. Comparar por
+    // sufijo evita que un cliente deje de encontrar su turno segun cuando
+    // se creo.
+    const telefonoSufijo = `%${telefono.slice(-10)}`;
     const now = new Date();
     const tz = now.getTimezoneOffset() * 60000;
     const todayStr = new Date(now - tz).toISOString().split("T")[0];
@@ -2397,7 +2402,7 @@ app.get("/api/:slug/mis-reservas", resolveBusiness, async (req, res, next) => {
         .from("appointments")
         .select("id, service_id, professional_id, fecha, hora_inicio, hora_fin, duracion_min, estado, nombre, cancel_token")
         .eq("business_id", req.business.id)
-        .eq("telefono", telefono)
+        .like("telefono", telefonoSufijo)
         .gte("fecha", todayStr)
         .neq("estado", "cancelada")
         .order("fecha", { ascending: true })
@@ -2408,9 +2413,9 @@ app.get("/api/:slug/mis-reservas", resolveBusiness, async (req, res, next) => {
       rows = await dbAll(
         `SELECT id, service_id, professional_id, fecha, hora_inicio, hora_fin, duracion_min, estado, nombre, cancel_token
          FROM appointments
-         WHERE business_id = ? AND telefono = ? AND fecha >= ? AND estado != 'cancelada'
+         WHERE business_id = ? AND telefono LIKE ? AND fecha >= ? AND estado != 'cancelada'
          ORDER BY fecha ASC, hora_inicio ASC`,
-        [req.business.id, telefono, todayStr]
+        [req.business.id, telefonoSufijo, todayStr]
       );
     }
     res.json((rows || []).map((r) => ({

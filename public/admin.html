@@ -469,7 +469,10 @@
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="label" for="manTelefono">Teléfono</label>
-                  <input id="manTelefono" type="tel" inputmode="numeric" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" placeholder="3364578599" />
+                  <div class="flex items-stretch">
+                    <span class="flex items-center whitespace-nowrap rounded-l-lg border border-r-0 border-border bg-neutral-bg px-3 text-sm font-semibold text-secondary">+54 9</span>
+                    <input id="manTelefono" type="tel" inputmode="numeric" maxlength="20" class="w-full rounded-r-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" placeholder="3364589907" />
+                  </div>
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="label" for="manServicio">Servicio</label>

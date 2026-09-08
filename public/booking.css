@@ -455,6 +455,27 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--business-accent) 20%, transparent);
 }
 
+.tel-group {
+  display: flex;
+  align-items: stretch;
+}
+.tel-group .tel-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  border: 1.5px solid var(--border-color);
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  background: var(--neutral-bg);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+.tel-group .field-input {
+  border-radius: 0 12px 12px 0;
+}
+
 .pay-box {
   border-radius: 14px;
   border: 1px solid var(--border-color);

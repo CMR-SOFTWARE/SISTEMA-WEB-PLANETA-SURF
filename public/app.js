@@ -1132,6 +1132,11 @@ function renderDatosSummary() {
   `;
 }
 
+// El input solo pide código de área + número (sin 0 ni 15); anteponemos
+// el prefijo de WhatsApp Argentina para que el teléfono guardado sirva
+// para escribirle al cliente directamente desde el panel.
+const WHATSAPP_AR_PREFIX = "549";
+
 function validarDatos() {
   const nombre = document.getElementById("nombre").value.trim();
   const telefono = document.getElementById("telefono").value.trim();
@@ -1139,12 +1144,12 @@ function validarDatos() {
     alert("Ingresá nombre y apellido.");
     return false;
   }
-  if (!/^\d{6,15}$/.test(telefono)) {
-    alert("Ingresá un teléfono válido (solo números).");
+  if (!/^\d{10}$/.test(telefono)) {
+    alert("Ingresá tu código de área + número, sin el 0 ni el 15 (10 dígitos en total).");
     return false;
   }
   clientNombre = nombre;
-  clientTelefono = telefono;
+  clientTelefono = WHATSAPP_AR_PREFIX + telefono;
   return true;
 }
 
@@ -1220,7 +1225,9 @@ btnHome.addEventListener("click", goHome);
 btnWizardBack.addEventListener("click", wizardBack);
 
 telefonoInput.addEventListener("input", () => {
-  telefonoInput.value = telefonoInput.value.replace(/\D/g, "");
+  // slice despues de filtrar: si maxlength cortara primero, un caracter no
+  // numerico tipeado por error restaria un digito real sin que se note.
+  telefonoInput.value = telefonoInput.value.replace(/\D/g, "").slice(0, 10);
 });
 
 formDatos.addEventListener("submit", (e) => {
@@ -1250,7 +1257,7 @@ formReserva.addEventListener("submit", async (event) => {
 
   const formData = new FormData(formReserva);
   formData.set("nombre", clientNombre || document.getElementById("nombre").value.trim());
-  formData.set("telefono", clientTelefono || document.getElementById("telefono").value.trim());
+  formData.set("telefono", clientTelefono || WHATSAPP_AR_PREFIX + document.getElementById("telefono").value.trim());
   formData.set("serviceId", selectedServiceId);
   formData.set("fecha", selectedFecha);
   formData.set("horaInicio", selectedHora);

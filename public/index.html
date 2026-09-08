@@ -301,17 +301,21 @@
             </div>
             <div>
               <label class="field-label" for="telefono">Teléfono</label>
-              <input
-                id="telefono"
-                name="telefono"
-                type="tel"
-                inputmode="numeric"
-                pattern="[0-9]+"
-                maxlength="15"
-                required
-                class="field-input"
-                placeholder="Ej: 3364578599"
-              />
+              <div class="tel-group">
+                <span class="tel-prefix">+54 9</span>
+                <input
+                  id="telefono"
+                  name="telefono"
+                  type="tel"
+                  inputmode="numeric"
+                  pattern="[0-9]+"
+                  maxlength="20"
+                  required
+                  class="field-input"
+                  placeholder="Ej: 3364589907"
+                />
+              </div>
+              <p class="mt-1 text-meta-sm text-secondary">Sin el 0 ni el 15. Solo código de área + número.</p>
             </div>
             <p class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-meta leading-snug text-amber-950">
               Podés cancelar hasta 24 h antes desde “Mis turnos”, con el mismo teléfono de la reserva.

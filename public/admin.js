@@ -11,6 +11,10 @@
   }
 
   const SLUG = getBusinessSlug();
+  // El input de teléfono solo pide código de área + número (sin 0 ni 15);
+  // anteponemos el prefijo de WhatsApp Argentina para que quede guardado
+  // en formato internacional listo para escribir por WhatsApp.
+  const WHATSAPP_AR_PREFIX = "549";
   const DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
   const DIAS_FULL = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -498,8 +502,17 @@
     return estado;
   }
 
+  /** Turnos viejos se guardaron sin prefijo de pais (solo los 10 digitos
+   *  locales). Si falta, se lo anteponemos aca para que el link de WhatsApp
+   *  abra el chat correcto en vez de un numero incompleto. */
+  function whatsappNumber(telefonoRaw) {
+    const digits = String(telefonoRaw || "").replace(/\D/g, "");
+    if (digits.length === 10) return WHATSAPP_AR_PREFIX + digits;
+    return digits;
+  }
+
   function whatsappHref(r) {
-    const telefono = String(r.telefono || "").replace(/\D/g, "");
+    const telefono = whatsappNumber(r.telefono);
     const texto = encodeURIComponent(
       `Hola ${r.nombre}, te contactamos sobre tu turno de ${serviceName(r)} el ${formatFecha(r.fecha)} a las ${r.horaInicio || r.horario || ""}hs.`
     );
@@ -1093,9 +1106,14 @@
   }
 
   async function guardarAgendarManual() {
+    const telefonoLocal = $("manTelefono")?.value?.trim() || "";
+    if (!/^\d{10}$/.test(telefonoLocal)) {
+      setMessage($("manMsg"), "Teléfono inválido: código de área + número, sin el 0 ni el 15 (10 dígitos).", true);
+      return;
+    }
     const body = {
       nombre: $("manNombre")?.value?.trim(),
-      telefono: $("manTelefono")?.value?.trim(),
+      telefono: WHATSAPP_AR_PREFIX + telefonoLocal,
       serviceId: Number($("manServicio")?.value),
       fecha: $("manFecha")?.value,
       horaInicio: $("manHorario")?.value,
@@ -2161,13 +2179,17 @@
     reservasActuales.forEach((r) => {
       const tel = String(r.telefono || "").replace(/\D/g, "");
       if (!tel) return;
-      const prev = map.get(tel) || { nombre: r.nombre, telefono: tel, count: 0, ultima: r.fecha };
+      // Agrupar por los ultimos 10 digitos: turnos viejos (sin prefijo 549)
+      // y nuevos (con prefijo) del mismo cliente no deben aparecer separados.
+      const key = tel.slice(-10);
+      const prev = map.get(key) || { nombre: r.nombre, telefono: tel, count: 0, ultima: r.fecha };
       prev.count += 1;
+      if (tel.length > prev.telefono.length) prev.telefono = tel;
       if (!prev.ultima || r.fecha > prev.ultima) {
         prev.ultima = r.fecha;
         prev.nombre = r.nombre || prev.nombre;
       }
-      map.set(tel, prev);
+      map.set(key, prev);
     });
     return [...map.values()].sort((a, b) => String(b.ultima).localeCompare(String(a.ultima)));
   }
@@ -2201,7 +2223,7 @@
     empty?.classList.add("hidden");
     tbody.innerHTML = clients
       .map((c) => {
-        const wa = `https://wa.me/${c.telefono}`;
+        const wa = `https://wa.me/${whatsappNumber(c.telefono)}`;
         const frecuente =
           c.count >= 5
             ? `<span class="ml-2 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold badge-success">Frecuente</span>`
@@ -3578,7 +3600,9 @@
     });
     $("btnGuardarAgendar")?.addEventListener("click", guardarAgendarManual);
     $("manTelefono")?.addEventListener("input", () => {
-      $("manTelefono").value = $("manTelefono").value.replace(/\D/g, "");
+      // slice despues de filtrar (no maxlength en el HTML) para que un
+      // caracter no numerico tipeado por error no reste un digito real.
+      $("manTelefono").value = $("manTelefono").value.replace(/\D/g, "").slice(0, 10);
     });
     ["manServicio", "manFecha", "manProfesional"].forEach((id) => {
       $(id)?.addEventListener("change", loadManHorarios);
