@@ -3,425 +3,80 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Canito Skin — Estética en San Nicolás de los Arroyos</title>
-    <meta name="description" content="Canito Skin: espacio de estética en San Nicolás de los Arroyos. Reservá tu turno online o conocé nuestra línea propia de skincare." />
+    <title>Planeta Surf — Ropa y accesorios</title>
+    <meta name="description" content="Planeta Surf: ropa y accesorios para vivir tu día a tu manera. Nuevos ingresos, sale de invierno y toda la colección." />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="stylesheet" href="/tailwind-build.css?v=20260903" />
-    <link rel="stylesheet" href="/booking.css?v=20260807-landing" />
+    <link rel="stylesheet" href="/tailwind-build.css" />
   </head>
-  <body class="scope-business booking-page font-sans text-primary">
-    <!-- Header -->
-    <header class="booking-header">
-      <div class="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <button type="button" id="btnHome" class="flex min-w-0 shrink-0 items-center gap-3 text-left" aria-label="Volver al inicio">
-          <div id="navLogo" class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-business-accent text-sm font-bold text-white select-none"></div>
-          <span id="navBusinessName" class="truncate text-sm font-semibold text-primary sm:text-base"></span>
-        </button>
+  <body class="bg-brand-paper text-primary">
+    <div data-topbar class="ps-topbar"></div>
+    <header data-header class="ps-header sticky top-0 z-20"></header>
 
-        <nav class="nav-links items-center gap-6 text-meta font-semibold text-secondary" aria-label="Secciones">
-          <a href="/tratamientos" class="hover:text-business-accent">Tratamientos</a>
-          <a href="/market" class="hover:text-business-accent">Productos</a>
-          <a href="/#sobre-canito" class="hover:text-business-accent">Nosotros</a>
-          <a href="/#videos" class="hover:text-business-accent">Conocé</a>
-          <a href="/#pieles-reales" class="hover:text-business-accent">Trabajos</a>
-          <a href="/#ubicacion" class="hover:text-business-accent">Ubicación</a>
-        </nav>
-
-        <div class="flex shrink-0 items-center gap-2">
-          <button type="button" id="btnWizardBack" class="btn-ghost hidden" aria-label="Volver">
-            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-            Volver
-          </button>
-          <a href="/cart" class="cart-link" aria-label="Ver carrito">
-            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
-            <span data-cart-count class="cart-badge hidden">0</span>
-          </a>
+    <main>
+      <!-- HERO -->
+      <section class="ps-hero">
+        <div class="mx-auto grid max-w-[1440px] gap-0 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,420px)_1fr] lg:items-center lg:gap-10 lg:py-16">
+          <div>
+            <h1 id="heroTitulo" class="font-display whitespace-pre-line text-[2.75rem] leading-[0.95] sm:text-[3.5rem]"></h1>
+            <p id="heroSubtitulo" class="mt-4 max-w-sm text-base text-secondary"></p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <a id="heroCtaPrimario" href="/productos" class="btn-primary px-6 py-3 text-xs uppercase tracking-wide">Ver colección</a>
+              <a id="heroCtaSecundario" href="/productos" class="ps-btn-outline">Nuevos ingresos</a>
+            </div>
+          </div>
+          <div class="mt-8 lg:mt-0">
+            <div id="heroGallery" class="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2"></div>
+            <div id="heroDots" class="mt-3 flex justify-center gap-1.5 sm:hidden"></div>
+          </div>
         </div>
-      </div>
-    </header>
+      </section>
 
-    <main class="w-full flex-1">
-      <!-- ════════ Screen A — Landing + business page ════════ -->
-      <div id="screenBusiness">
-
-        <!-- 1. HERO -->
-        <section class="canito-section-cover" aria-labelledby="heroNombre">
-          <img class="canito-mark" src="/images/canito-mark.png" alt="" aria-hidden="true" />
-          <div class="relative z-[1] mx-auto max-w-2xl">
-            <p id="heroCategoria" class="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-canito-crema/80"></p>
-            <h1 id="heroNombre" class="font-display text-display uppercase tracking-tight text-canito-crema"></h1>
-            <p class="mx-auto mt-4 max-w-md text-serif text-canito-crema/90">Pieles reales, cuidado real.</p>
-            <p id="heroTagline" class="mt-2 text-sm text-canito-crema/70"></p>
-            <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a href="/tratamientos" class="btn-accent !w-auto px-6">Reservar turno</a>
-              <a href="/market" class="!w-auto rounded-xl border border-canito-crema/40 px-6 py-3 text-sm font-semibold text-canito-crema transition hover:bg-canito-crema/10">
-                Ver productos
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2. SOBRE CANITO -->
-        <section id="sobre-canito" class="canito-section-body" aria-labelledby="sobreTitle">
-          <div class="mx-auto grid max-w-3xl items-center gap-8 sm:grid-cols-[1.1fr_0.9fr]">
+      <!-- BENEFICIOS -->
+      <section class="ps-benefits">
+        <div class="mx-auto grid max-w-[1440px] grid-cols-1 gap-6 px-4 py-6 text-sm sm:grid-cols-3 sm:px-6">
+          <div class="flex items-center gap-3">
+            <svg viewBox="0 0 24 24" class="h-6 w-6 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="7" width="15" height="10" rx="1"/><path d="M16 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg>
             <div>
-              <p class="text-serif text-business-accent">Sobre nosotros</p>
-              <h2 id="sobreTitle" class="mt-2 text-2xl">Un espacio de confianza y bienestar</h2>
-              <p class="mt-4 text-sm leading-relaxed text-secondary">
-                En Canito Skin te recibimos con calidez y trato personalizado, para cuidar tu piel
-                y también tu autoestima. Cada tratamiento se piensa a tu medida, en un ambiente
-                cercano donde te sentís escuchada de verdad.
-              </p>
-              <ul class="mt-6 grid grid-cols-2 gap-3">
-                <li class="canito-sticker">Calidez</li>
-                <li class="canito-sticker canito-sticker--promo">Excelencia</li>
-                <li class="canito-sticker">Confianza</li>
-                <li class="canito-sticker canito-sticker--promo">Comunidad</li>
-              </ul>
-            </div>
-            <div id="sobreFotoWrap" class="relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-card bg-canito-taupe">
-              <img id="sobreFotoImg" src="/images/logo-canito-nav.png" alt="Canito Skin" class="h-2/3 w-2/3 object-contain opacity-90" />
+              <div id="beneficio1Titulo" class="font-semibold uppercase tracking-wide"></div>
+              <div id="beneficio1Subtitulo" class="text-meta"></div>
             </div>
           </div>
-        </section>
-
-        <!-- 3-4. TRATAMIENTOS DESTACADOS + SERVICIOS / TURNOS -->
-        <section id="servicios" class="canito-section-body canito-section-body--taupe">
-          <div class="mx-auto max-w-3xl">
-            <div id="serviciosDestacadosWrap" class="hidden" aria-labelledby="serviciosDestTitle">
-              <p class="text-serif text-business-accent">Nuestros tratamientos</p>
-              <h2 id="serviciosDestTitle" class="mt-2 text-2xl">Tratamientos destacados</h2>
-              <p class="mt-2 max-w-md text-sm text-secondary">Una selección de nuestros servicios más pedidos.</p>
-              <div id="serviciosDestacadosList" class="svc-grid mt-6"></div>
-              <a href="/tratamientos" class="mt-6 inline-block text-meta font-semibold text-business-accent hover:underline">Ver todos los tratamientos →</a>
-            </div>
-
-            <div class="mt-10 border-t border-canito-carbon/10 pt-8 space-y-8">
-              <div>
-                <p class="text-serif text-canito-carbon">Tu turno</p>
-                <h2 id="serviciosTitle" class="mt-2 text-2xl">Gestioná tu turno</h2>
-                <div id="businessMeta" class="booking-meta-row mt-4"></div>
-              </div>
-              <div id="serviciosList" class="svc-grid hidden"></div>
-
-              <section id="planesSection" class="hidden" aria-labelledby="planesTitle">
-                <h3 id="planesTitle" class="text-lg font-semibold text-primary">Planes</h3>
-                <p class="mt-1 text-sm text-secondary">Packs de sesiones con mejor precio.</p>
-                <div id="planesList" class="svc-grid mt-3"></div>
-              </section>
-
-              <section id="equipoSection" class="hidden" aria-labelledby="equipoTitle">
-                <h3 id="equipoTitle" class="text-lg font-semibold text-primary">Nuestro equipo</h3>
-                <div id="equipoList" class="mt-4 flex flex-wrap gap-6"></div>
-              </section>
-            </div>
-
-            <!-- Mis turnos / cancelación (collapsed) -->
-            <details class="help-drawer" id="helpDrawer">
-              <summary>
-                <span>Mis turnos</span>
-                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </summary>
-              <div class="space-y-4 pb-4">
-                <div>
-                  <p class="text-meta text-secondary">Ingresá el teléfono con el que reservaste para ver y cancelar turnos.</p>
-                  <div class="mt-3 flex gap-2">
-                    <input
-                      id="misTelefono"
-                      type="tel"
-                      inputmode="numeric"
-                      placeholder="Ej: 3364578599"
-                      class="field-input flex-1"
-                    />
-                    <button id="btnMisReservas" type="button" class="btn-accent !w-auto shrink-0 px-4">
-                      Consultar
-                    </button>
-                  </div>
-                  <div id="misTurnosList" class="mt-3 space-y-2"></div>
-                  <p id="misTurnosMsg" class="mt-2 min-h-5 text-sm font-semibold"></p>
-                </div>
-
-                <div>
-                  <button id="btnSolicitarCancelacion" type="button" class="btn-ghost text-business-accent">
-                    Pedir ayuda por WhatsApp
-                  </button>
-                </div>
-              </div>
-            </details>
-          </div>
-        </section>
-
-        <!-- 3. VIDEOS INSTITUCIONALES -->
-        <section id="videos" class="canito-section-cover canito-section-cover--carbon" aria-labelledby="videosTitle">
-          <div class="relative z-[1] mx-auto max-w-3xl">
-            <p class="text-serif text-canito-crema/80">Conocé Canito</p>
-            <h2 id="videosTitle" class="mt-2 font-display text-2xl uppercase text-canito-crema">Videos institucionales</h2>
-            <div class="mt-6 flex flex-col items-center gap-6 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-6">
-              <img src="/images/logo-canito-script-crema.png" alt="" class="w-44 shrink-0 opacity-90 sm:w-56 sm:justify-self-end" aria-hidden="true" />
-              <div id="videosReelWrap" class="w-full max-w-[340px]">
-              <div id="videosReel" class="relative overflow-hidden rounded-2xl bg-black" style="aspect-ratio: 9 / 16;">
-                <video id="reelVideoEl" class="hidden h-full w-full object-cover" muted loop playsinline></video>
-                <a id="reelLinkSlide" href="#" target="_blank" rel="noopener noreferrer" class="hidden absolute inset-0 flex-col items-center justify-center gap-3 bg-canito-oliva px-6 text-center text-canito-crema">
-                  <svg viewBox="0 0 24 24" class="h-10 w-10" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-                  <span id="reelLinkTitulo" class="text-sm font-semibold"></span>
-                  <span class="text-xs text-canito-crema/70">Ver video</span>
-                </a>
-
-                <div id="reelDots" class="absolute left-0 right-0 top-2 flex justify-center gap-1 px-3"></div>
-
-                <button type="button" id="reelPrev" aria-label="Video anterior" class="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60">
-                  <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-                </button>
-                <button type="button" id="reelNext" aria-label="Video siguiente" class="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60">
-                  <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
-                </button>
-                <button type="button" id="reelMute" aria-label="Activar/silenciar sonido" class="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60">
-                  <svg id="reelMuteIcon" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>
-                </button>
-                <p id="reelTitulo" class="pointer-events-none absolute bottom-3 left-3 right-14 truncate text-sm font-semibold text-white"></p>
-              </div>
-              </div>
-            </div>
-            <p id="videosVacio" class="mt-4 text-meta-sm text-canito-crema/60 hidden">Esta sección se gestiona desde el panel de Canito, sin tocar código.</p>
-          </div>
-        </section>
-
-        <!-- 5. PRODUCTOS DESTACADOS -->
-        <section id="productos-destacados" class="canito-section-body" aria-labelledby="productosTitle">
-          <div class="mx-auto max-w-3xl">
-            <p class="text-serif text-business-accent">Nuestros productos</p>
-            <h2 id="productosTitle" class="mt-2 text-2xl">Productos Canito</h2>
-            <p class="mt-2 max-w-md text-sm text-secondary">Skincare pensado para seguir el cuidado en casa.</p>
-            <div id="productosDestacadosList" class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
-              <p class="text-sm text-secondary">Cargando productos…</p>
-            </div>
-            <a href="/market" class="mt-6 inline-block text-meta font-semibold text-business-accent hover:underline">Ver catálogo completo →</a>
-          </div>
-        </section>
-
-        <!-- 6. PIELES REALES -->
-        <section id="pieles-reales" class="canito-section-body canito-section-body--taupe" aria-labelledby="pielesTitle">
-          <div class="mx-auto max-w-5xl text-center">
-            <p class="text-serif text-canito-carbon">Pieles reales</p>
-            <h2 id="pielesTitle" class="mt-2 text-2xl">Nuestro trabajo, sin filtros</h2>
-            <p class="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-canito-carbon/80">
-              Nada de fotos de stock: resultados y gabinete reales de Canito.
-            </p>
-            <div id="pielesGaleriaList" class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"></div>
-            <p id="pielesGaleriaNota" class="mt-3 text-[11px] font-medium uppercase tracking-wide text-canito-carbon/50 hidden">Ilustraciones de ejemplo — se reemplazan por fotos reales</p>
-          </div>
-        </section>
-
-        <!-- 7. UBICACIÓN Y CONTACTO -->
-        <section id="ubicacion" class="canito-section-cover" aria-labelledby="ubicacionTitle">
-          <img class="canito-mark" src="/images/canito-mark.png" alt="" aria-hidden="true" />
-          <div class="relative z-[1] mx-auto max-w-md">
-            <p class="text-serif text-canito-crema/80">Te esperamos</p>
-            <h2 id="ubicacionTitle" class="mt-2 font-display text-2xl uppercase text-canito-crema">Ubicación y contacto</h2>
-            <div class="mt-6 space-y-2 text-sm text-canito-crema/85">
-              <p id="ubicacionDireccion" class="flex items-center justify-center gap-2">
-                <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s7-4.5 7-10a7 7 0 10-14 0c0 5.5 7 10 7 10z"/><circle cx="12" cy="11" r="2.5"/></svg>
-                <span>Allurralde 314, San Nicolás de los Arroyos</span>
-              </p>
-              <p id="ubicacionHorario" class="flex items-center justify-center gap-2">
-                <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                <span></span>
-              </p>
-            </div>
-            <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a id="whatsappCTA" href="#" target="_blank" rel="noopener noreferrer" class="btn-accent !w-auto px-6">Escribinos por WhatsApp</a>
-              <a id="comoLlegarLink" href="#" target="_blank" rel="noopener noreferrer" class="!w-auto rounded-xl border border-canito-crema/40 px-6 py-3 text-sm font-semibold text-canito-crema transition hover:bg-canito-crema/10">
-                Cómo llegar
-              </a>
+          <div class="flex items-center gap-3">
+            <svg viewBox="0 0 24 24" class="h-6 w-6 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            <div>
+              <div id="beneficio2Titulo" class="font-semibold uppercase tracking-wide"></div>
+              <div id="beneficio2Subtitulo" class="text-meta"></div>
             </div>
           </div>
-        </section>
-      </div>
-
-      <!-- ════════ Screen B — Booking wizard ════════ -->
-      <div id="screenWizard" class="wizard-shell hidden">
-        <div class="mb-1 flex items-center justify-between gap-2">
-          <p id="wizardStepLabel" class="text-meta font-medium text-secondary"></p>
-          <p id="wizardServiceChip" class="truncate text-meta-sm font-semibold text-business-accent"></p>
+          <div class="flex items-center gap-3">
+            <svg viewBox="0 0 24 24" class="h-6 w-6 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2 4 5v6c0 5 3.4 8.8 8 11 4.6-2.2 8-6 8-11V5z"/></svg>
+            <div>
+              <div id="beneficio3Titulo" class="font-semibold uppercase tracking-wide"></div>
+              <div id="beneficio3Subtitulo" class="text-meta"></div>
+            </div>
+          </div>
         </div>
-        <div class="wizard-progress" aria-hidden="true">
-          <div id="wizardProgressBar" class="wizard-progress__bar" style="width: 0%"></div>
+      </section>
+
+      <!-- NUEVOS INGRESOS -->
+      <section class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6">
+        <div class="mb-5 flex items-end justify-between">
+          <h2>Nuevos ingresos</h2>
+          <a href="/productos" class="text-meta font-semibold hover:text-brand-ink">Ver todo →</a>
         </div>
+        <div id="destacadosGrid" class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-6"></div>
+        <p id="destacadosVacio" class="hidden text-meta">Todavía no hay productos cargados en la Home.</p>
+      </section>
 
-        <!-- Step: professional -->
-        <section id="stepProfessional" class="wizard-step hidden">
-          <h2 class="text-xl font-bold text-primary">Elegí profesional</h2>
-          <p class="mt-1 text-sm text-secondary">Seleccioná con quién querés tu turno.</p>
-          <div id="profesionalesList" class="mt-5 space-y-2.5"></div>
-        </section>
-
-        <!-- Step: date + slots -->
-        <section id="stepFecha" class="wizard-step hidden">
-          <h2 class="text-xl font-bold text-primary">Elegí una fecha</h2>
-          <p class="mt-1 text-sm text-secondary">Después elegí el horario disponible.</p>
-
-          <div class="mt-5 rounded-2xl border border-border bg-white p-4 shadow-card">
-            <div class="cal-nav">
-              <button type="button" id="calPrev" aria-label="Mes anterior">
-                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <p id="calMonthLabel" class="text-sm font-semibold capitalize"></p>
-              <button type="button" id="calNext" aria-label="Mes siguiente">
-                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-            </div>
-            <div id="calGrid" class="cal-grid" role="grid" aria-label="Calendario"></div>
-          </div>
-
-          <div class="mt-6">
-            <h3 class="text-sm font-semibold text-primary">Horarios disponibles</h3>
-            <p id="slotsHint" class="mt-1 text-meta text-secondary">Seleccioná un día en el calendario.</p>
-            <div id="horarios" class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4"></div>
-          </div>
-        </section>
-
-        <!-- Step: personal data -->
-        <section id="stepDatos" class="wizard-step hidden">
-          <h2 class="text-xl font-bold text-primary">Tus datos</h2>
-          <p class="mt-1 text-sm text-secondary">Completá para continuar con la reserva.</p>
-
-          <div id="reservaSummary" class="summary-card mt-5"></div>
-
-          <form id="formDatos" class="mt-5 space-y-4" autocomplete="on">
-            <div>
-              <label class="field-label" for="nombre">Nombre y apellido</label>
-              <input id="nombre" name="nombre" type="text" required class="field-input" placeholder="Ej: Ana Pérez" />
-            </div>
-            <div>
-              <label class="field-label" for="telefono">Teléfono</label>
-              <div class="tel-group">
-                <span class="tel-prefix">+54 9</span>
-                <input
-                  id="telefono"
-                  name="telefono"
-                  type="tel"
-                  inputmode="numeric"
-                  pattern="[0-9]+"
-                  maxlength="20"
-                  required
-                  class="field-input"
-                  placeholder="Ej: 3364589907"
-                />
-              </div>
-              <p class="mt-1 text-meta-sm text-secondary">Sin el 0 ni el 15. Solo código de área + número.</p>
-            </div>
-            <p class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-meta leading-snug text-amber-950">
-              Podés cancelar hasta 24 h antes desde “Mis turnos”, con el mismo teléfono de la reserva.
-            </p>
-            <button id="btnContinuarPago" type="submit" class="btn-accent">Continuar</button>
-          </form>
-        </section>
-
-        <!-- Step: payment / comprobante -->
-        <section id="stepPago" class="wizard-step hidden">
-          <h2 class="text-xl font-bold text-primary">Transferencia y comprobante</h2>
-          <p class="mt-1 text-sm text-secondary">Transferí la seña y subí el comprobante para confirmar.</p>
-
-          <p class="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-sm font-medium leading-snug text-amber-950">
-            La seña es de <strong id="senaMonto">$0</strong>. Si no se transfiere ese monto, el turno se cancela automáticamente.
-          </p>
-
-          <dl class="pay-box mt-4">
-            <dt>Alias</dt>
-            <dd id="aliasTransferencia">—</dd>
-            <dt>CBU</dt>
-            <dd id="cbuTransferencia">—</dd>
-            <dt>Titular</dt>
-            <dd id="titularTransferencia">—</dd>
-          </dl>
-
-          <form id="formReserva" class="mt-5 space-y-4" enctype="multipart/form-data">
-            <div>
-              <label class="field-label" for="comprobante">Comprobante (JPG, PNG, WEBP o PDF)</label>
-              <input
-                id="comprobante"
-                name="comprobante"
-                type="file"
-                accept=".jpg,.jpeg,.png,.webp,.pdf"
-                required
-                class="field-input file:mr-3 file:rounded-lg file:border-0 file:bg-business-accent-light file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-business-accent"
-              />
-            </div>
-            <p id="mensaje" class="min-h-5 text-sm font-semibold text-danger"></p>
-            <div class="flex flex-col gap-2 sm:flex-row">
-              <button id="btnVolverDatos" type="button" class="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-primary hover:bg-neutral-bg sm:w-auto sm:flex-1">
-                Volver
-              </button>
-              <button id="btnReservar" type="submit" class="btn-accent sm:flex-[2]">Confirmar reserva</button>
-            </div>
-          </form>
-        </section>
-
-        <!-- Step: confirmation -->
-        <section id="stepConfirmacion" class="wizard-step hidden">
-          <div class="flex flex-col items-center gap-3 py-4 text-center">
-            <div class="flex h-16 w-16 items-center justify-center rounded-full bg-success-bg">
-              <svg class="h-9 w-9 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <h2 class="text-xl font-bold text-success">¡Listo! Tu turno con Canito está confirmado</h2>
-            <div id="confirmacionDetalle" class="w-full space-y-1 rounded-2xl border border-border bg-neutral-bg px-4 py-3 text-left text-sm text-primary"></div>
-            <p class="text-sm text-secondary">Enviá el comprobante por WhatsApp para confirmar tu pago.</p>
-            <div class="flex w-full flex-col gap-2">
-              <a
-                id="btnWhatsAppConfirm"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn-accent"
-              >
-                Enviar comprobante por WhatsApp
-              </a>
-              <button id="btnOtraReserva" type="button" class="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-primary hover:bg-neutral-bg">
-                Reservar otro turno
-              </button>
-            </div>
-          </div>
-        </section>
-      </div>
+      <!-- CATEGORÍAS -->
+      <section class="mx-auto max-w-[1440px] px-4 pb-14 sm:px-6">
+        <div id="categoriasGrid" class="grid grid-cols-2 gap-3 sm:grid-cols-4"></div>
+      </section>
     </main>
 
-    <a id="linkAdmin" href="#" class="admin-fab" aria-label="Entrar como administrador" title="Admin">
-      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="8" r="4"></circle>
-        <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"></path>
-      </svg>
-    </a>
+    <footer data-footer class="border-t border-brand-line"></footer>
 
-    <!-- 8. FOOTER -->
-    <footer class="border-t border-canito-taupe bg-canito-crema">
-      <div class="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10 sm:px-6">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p class="font-display text-lg uppercase text-canito-carbon">Canito Skin</p>
-            <p class="mt-1 text-meta-sm text-secondary">Allurralde 314, San Nicolás de los Arroyos</p>
-          </div>
-          <nav class="flex flex-wrap gap-x-5 gap-y-2 text-meta text-secondary">
-            <a href="/tratamientos" class="hover:text-business-accent">Turnos</a>
-            <a href="/market" class="hover:text-business-accent">Productos</a>
-            <a href="https://www.instagram.com/canitoskin/" target="_blank" rel="noopener noreferrer" class="hover:text-business-accent">Instagram</a>
-            <a href="/privacidad" class="hover:text-business-accent">Privacidad</a>
-            <a href="/terminos" class="hover:text-business-accent">Términos</a>
-          </nav>
-        </div>
-        <p class="text-meta-sm text-secondary/70">© 2026 Canito Skin · Sistema desarrollado por <a href="https://www.instagram.com/cmrsoftware.sn/" target="_blank" rel="noopener noreferrer" class="hover:text-business-accent">CMR Software Solutions</a></p>
-      </div>
-    </footer>
-
-    <script src="/cart.js?v=20260807-cart"></script>
-    <script src="/app.js?v=20260807-landing"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/home.js"></script>
   </body>
 </html>

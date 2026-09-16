@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Productos — Planeta Surf</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="stylesheet" href="/tailwind-build.css" />
+  </head>
+  <body class="bg-brand-paper text-primary">
+    <div data-topbar class="ps-topbar"></div>
+    <header data-header class="ps-header sticky top-0 z-20"></header>
+
+    <main class="mx-auto max-w-[1440px] px-4 py-8 sm:px-6">
+      <h1 class="mb-6">Productos</h1>
+
+      <div class="grid gap-8 lg:grid-cols-[220px_1fr]">
+        <!-- FILTROS -->
+        <aside class="space-y-6">
+          <div>
+            <div class="text-h3 mb-2">Buscar</div>
+            <input id="fBuscar" type="search" placeholder="Nombre del producto" class="w-full border border-brand-line px-3 py-2 text-sm" />
+          </div>
+
+          <div>
+            <div class="text-h3 mb-2">Categoría</div>
+            <select id="fCategoria" class="w-full border border-brand-line px-3 py-2 text-sm">
+              <option value="">Todas</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="text-h3 mb-2">Precio</div>
+            <div class="flex items-center gap-2">
+              <input id="fPrecioMin" type="number" min="0" placeholder="Mín" class="w-full border border-brand-line px-2 py-2 text-sm" />
+              <span class="text-meta">—</span>
+              <input id="fPrecioMax" type="number" min="0" placeholder="Máx" class="w-full border border-brand-line px-2 py-2 text-sm" />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-sm"><input id="fDisponible" type="checkbox" /> Solo disponibles</label>
+            <label class="flex items-center gap-2 text-sm"><input id="fPromocion" type="checkbox" /> En oferta</label>
+            <label class="flex items-center gap-2 text-sm"><input id="fDestacado" type="checkbox" /> Destacados</label>
+          </div>
+
+          <button id="fLimpiar" type="button" class="text-meta font-semibold underline">Limpiar filtros</button>
+        </aside>
+
+        <!-- RESULTADOS -->
+        <div>
+          <div class="mb-4 flex items-center justify-between gap-4">
+            <span id="resultadosCount" class="text-meta"></span>
+            <select id="fOrden" class="border border-brand-line px-3 py-2 text-sm">
+              <option value="relevancia">Relevancia</option>
+              <option value="precio_asc">Menor precio</option>
+              <option value="precio_desc">Mayor precio</option>
+              <option value="novedades">Más nuevos</option>
+              <option value="destacados">Destacados</option>
+            </select>
+          </div>
+
+          <div id="productosGrid" class="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-4"></div>
+          <p id="productosVacio" class="hidden text-meta">No encontramos productos con esos filtros.</p>
+        </div>
+      </div>
+    </main>
+
+    <footer data-footer class="mt-14 border-t border-brand-line"></footer>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/productos.js"></script>
+  </body>
+</html>

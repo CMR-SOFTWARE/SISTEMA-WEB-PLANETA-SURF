@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="pageTitle">Producto — Planeta Surf</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="stylesheet" href="/tailwind-build.css" />
+  </head>
+  <body class="bg-brand-paper text-primary">
+    <div data-topbar class="ps-topbar"></div>
+    <header data-header class="ps-header sticky top-0 z-20"></header>
+
+    <main class="mx-auto max-w-[1440px] px-4 py-8 sm:px-6">
+      <a href="/productos" class="text-meta font-semibold hover:text-brand-ink">← Volver a productos</a>
+
+      <div id="productoContent" class="mt-6 hidden grid-cols-1 gap-10 lg:grid-cols-2">
+        <div>
+          <div id="galeriaPrincipal" class="aspect-square overflow-hidden bg-brand-mist"></div>
+          <div id="galeriaMiniaturas" class="mt-3 grid grid-cols-5 gap-2"></div>
+        </div>
+        <div>
+          <div id="prodCategoria" class="text-meta uppercase tracking-wide"></div>
+          <h1 id="prodNombre" class="mt-1"></h1>
+          <div id="prodTag" class="mt-2"></div>
+          <div id="prodPrecio" class="mt-4 text-xl"></div>
+          <div id="prodDisponibilidad" class="mt-2 text-meta"></div>
+          <p id="prodDescripcion" class="mt-4 whitespace-pre-line text-sm text-secondary"></p>
+
+          <a id="btnConsultar" href="#" target="_blank" rel="noopener" class="btn-primary mt-6 w-full px-6 py-3 text-xs uppercase tracking-wide sm:w-auto">
+            Consultar por WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <p id="productoNoEncontrado" class="mt-10 hidden text-meta">No encontramos este producto. Puede que ya no esté disponible.</p>
+    </main>
+
+    <footer data-footer class="mt-14 border-t border-brand-line"></footer>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/producto-detalle.js"></script>
+  </body>
+</html>

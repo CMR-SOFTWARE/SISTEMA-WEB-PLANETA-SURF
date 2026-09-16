@@ -8,5 +8,9 @@ reservas.sqlite-wal
 turnos.sqlite
 turnos.sqlite-shm
 turnos.sqlite-wal
+planetasurf.sqlite
+planetasurf.sqlite-shm
+planetasurf.sqlite-wal
 .vercel
 .env*
+.claude/settings.local.json

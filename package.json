@@ -1,15 +1,15 @@
 {
-  "name": "canitoskin",
+  "name": "planeta-surf",
   "version": "1.0.0",
-  "description": "Canito Skin — plataforma de turnos, market y admin (San Nicolás)",
+  "description": "Planeta Surf — ecommerce de ropa y accesorios (catálogo + admin)",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
     "build:css": "tailwindcss -i ./src/tailwind-input.css -o ./public/tailwind-build.css --minify"
   },
   "keywords": [
-    "turnos",
-    "reservas",
+    "ecommerce",
+    "productos",
     "express",
     "cmr"
   ],

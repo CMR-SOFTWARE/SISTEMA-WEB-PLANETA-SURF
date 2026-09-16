@@ -3,1372 +3,276 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Canito Skin — Admin</title>
+    <title>Admin — Planeta Surf</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="stylesheet" href="/tailwind-build.css?v=20260903" />
-    <style>
-      .admin-shell { min-height: 100dvh; }
-      @media (min-width: 1024px) {
-        .admin-sidebar {
-          position: sticky;
-          top: 0;
-          height: 100dvh;
-        }
-      }
-      .nav-item.is-active { opacity: 1; background: var(--business-accent); color: #fff; }
-      .view { display: none; }
-      .view.is-active { display: block; }
-      .kpi-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 1rem;
-        box-shadow: var(--shadow-card-soft);
-      }
-      .kpi-value { font-size: var(--text-metric); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
-      .kpi-sub { font-size: var(--text-meta-sm); color: var(--text-secondary); margin-top: 0.35rem; }
-      .appt-row {
-        background: #fff;
-        border: 1px solid var(--border-color);
-        border-left: 4px solid var(--business-accent);
-        border-radius: 0.75rem;
-        padding: 0.875rem 1rem;
-        box-shadow: var(--shadow-card);
-      }
-      .appt-row.is-confirmada { border-left-color: var(--success); }
-      .appt-row.is-pendiente { border-left-color: var(--warning); }
-      .appt-row.is-cancelada { border-left-color: var(--danger); }
-      .appt-row.is-concluida { border-left-color: var(--neutral); opacity: 0.8; }
-      .pill-group {
-        display: inline-flex;
-        padding: 0.2rem;
-        border-radius: 999px;
-        background: var(--neutral-bg);
-        border: 1px solid var(--border-color);
-        gap: 0.15rem;
-      }
-      .pill-group button {
-        border: none;
-        background: transparent;
-        border-radius: 999px;
-        padding: 0.4rem 0.9rem;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 120ms ease;
-      }
-      .pill-group button.is-active {
-        background: var(--business-accent);
-        color: #fff;
-      }
-      .pill-group--vista {
-        padding: 0.3rem;
-        gap: 0.25rem;
-        background: #fff;
-        border: 1px solid var(--border-color);
-        box-shadow: var(--shadow-card-soft, 0 1px 3px rgba(15, 23, 42, 0.08));
-      }
-      .pill-group--vista button {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.65rem 1.1rem;
-        font-size: 0.875rem;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-      }
-      .pill-group--vista button svg {
-        width: 1.05rem;
-        height: 1.05rem;
-        flex-shrink: 0;
-        opacity: 0.85;
-      }
-      .pill-group--vista button.is-active {
-        background: var(--business-accent);
-        color: #fff;
-        box-shadow: 0 6px 16px color-mix(in srgb, var(--business-accent) 35%, transparent);
-      }
-      .pill-group--vista button.is-active svg { opacity: 1; }
-      .pill-group--vista button:not(.is-active):hover {
-        background: var(--neutral-bg);
-        color: var(--text-primary);
-      }
-      .stat-bar { height: 8px; border-radius: 999px; background: var(--border-color); overflow: hidden; }
-      .stat-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--business-accent); }
-      .day-chip {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.5rem;
-        height: 1.5rem;
-        border-radius: 999px;
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: var(--text-secondary);
-        background: var(--neutral-bg);
-      }
-      .day-chip.is-on {
-        color: #fff;
-        background: var(--business-accent);
-      }
-      .bloqueo-card {
-        background: var(--warning-bg);
-        border: 1px solid color-mix(in srgb, var(--warning) 28%, white);
-        border-radius: 0.75rem;
-        padding: 0.75rem 1rem;
-      }
-      .cal-week {
-        display: grid;
-        grid-template-columns: 56px repeat(7, minmax(110px, 1fr));
-        min-width: 900px;
-        background: var(--card-bg);
-      }
-      .cal-head, .cal-time, .cal-cell {
-        border-bottom: 1px solid var(--border-color);
-        border-right: 1px solid var(--border-color);
-      }
-      .cal-head { padding: 0.65rem 0.4rem; text-align: center; background: var(--content-bg); }
-      .cal-time {
-        padding: 0.35rem 0.35rem 0;
-        font-size: 0.7rem;
-        color: var(--text-secondary);
-        text-align: right;
-        background: var(--content-bg);
-      }
-      .cal-cell { min-height: 42px; padding: 2px; position: relative; }
-      .cal-block {
-        border-radius: 6px;
-        padding: 0.2rem 0.35rem;
-        font-size: 0.65rem;
-        line-height: 1.25;
-        color: #fff;
-        margin-bottom: 2px;
-        overflow: hidden;
-      }
-      .cal-block-meta {
-        display: block;
-        opacity: 0.9;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .cal-cell.is-fuera {
-        background: color-mix(in srgb, #a8a29e 12%, transparent);
-      }
-      .cal-head.is-cerrado {
-        opacity: 0.55;
-      }
-      .cal-block.is-concluida {
-        opacity: 0.55;
-        filter: grayscale(0.4);
-      }
-      .cal-block.is-bloqueo {
-        background: repeating-linear-gradient(
-          -45deg,
-          #78716c,
-          #78716c 4px,
-          #57534e 4px,
-          #57534e 8px
-        );
-        color: #fff;
-        opacity: 0.92;
-      }
-      .cal-block.is-bloqueo-full {
-        background: #57534e;
-      }
-      .cal-head.is-blocked {
-        background: color-mix(in srgb, #78716c 18%, var(--content-bg));
-      }
-      .cal-head-blocked {
-        margin-top: 0.2rem;
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: #57534e;
-        text-transform: none;
-        letter-spacing: 0;
-      }
-      .cal-cell.is-blocked {
-        background: color-mix(in srgb, #a8a29e 14%, white);
-      }
-      .mov-badge {
-        display: inline-flex;
-        align-items: center;
-        border-radius: 9999px;
-        padding: 0.15rem 0.55rem;
-        font-size: 0.7rem;
-        font-weight: 700;
-      }
-      .mov-badge.is-ingreso { background: #dcfce7; color: #15803d; }
-      .mov-badge.is-gasto { background: #fee2e2; color: #b91c1c; }
-      .mov-kpi-ingreso .kpi-value { color: #15803d; }
-      .mov-kpi-gasto .kpi-value { color: #b91c1c; }
-      .mov-kpi-balance .kpi-value { color: var(--business-accent); }
-      .admin-table th {
-        font-size: var(--text-meta-sm);
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: var(--text-secondary);
-      }
-      .plan-create-card {
-        border: 2px dashed var(--border-color);
-        border-radius: var(--radius-card);
-        background: transparent;
-        min-height: 180px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
-      }
-      .plan-create-card:hover {
-        border-color: var(--business-accent);
-        color: var(--business-accent);
-        background: var(--business-accent-light);
-      }
-      .dia-chip {
-        min-width: 2.75rem;
-        border-radius: 9999px;
-        border: 1px solid var(--border-color);
-        background: #fff;
-        padding: 0.4rem 0.75rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-secondary);
-        transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
-      }
-      .dia-chip.is-active {
-        background: var(--business-accent);
-        border-color: var(--business-accent);
-        color: #fff;
-      }
-      .trend-up { color: var(--success); }
-      .trend-down { color: var(--danger); }
-      .trend-flat { color: var(--text-secondary); }
-      .search-input {
-        width: 100%;
-        max-width: 28rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.75rem;
-        padding: 0.65rem 0.9rem 0.65rem 2.5rem;
-        background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371717A'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z'/%3E%3C/svg%3E") 0.75rem center / 1.1rem no-repeat;
-      }
-      .search-input:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--business-accent) 35%, transparent);
-        border-color: var(--business-accent);
-      }
-    </style>
+    <link rel="stylesheet" href="/tailwind-build.css" />
   </head>
-  <body class="scope-business min-h-screen bg-content text-primary font-sans">
-
+  <body class="bg-content text-primary">
     <!-- LOGIN -->
-    <section id="loginCard" class="min-h-screen flex items-center justify-center p-4">
-      <div class="w-full max-w-md rounded-card bg-card shadow-card border border-border overflow-hidden">
-        <div class="h-1" style="background: var(--business-accent)"></div>
-        <div class="p-6 sm:p-8">
-          <div class="mb-6 text-center">
-            <div id="loginAvatar" class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl text-xl font-bold text-white"
-                 style="background: var(--business-accent)">A</div>
-            <h1 class="text-h1">Panel de gestión</h1>
-            <p id="loginBusinessName" class="text-meta mt-1">Ingresá tu clave de administrador</p>
-          </div>
-          <div class="mb-3 flex flex-col gap-1">
-            <label class="label" for="adminPassword">Clave de administrador</label>
-            <input id="adminPassword" type="password" autocomplete="current-password"
-                   class="rounded-lg border border-border px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-          </div>
-          <button id="btnLogin" type="button" class="btn-primary w-full">Ingresar</button>
-          <p id="loginMessage" class="mt-3 min-h-5 text-sm font-semibold text-danger"></p>
-          <p class="mt-4 text-center text-meta-sm">
-            <a id="linkMenuLogin" href="/" class="text-secondary hover:text-primary underline-offset-2 hover:underline">Volver al sitio</a>
-          </p>
-        </div>
-      </div>
-    </section>
+    <div id="loginCard" class="flex min-h-screen items-center justify-center px-4">
+      <form id="loginForm" class="ds-card w-full max-w-sm p-6">
+        <div class="font-display text-lg font-black uppercase">Planeta Surf</div>
+        <p class="text-meta mt-1">Panel administrador</p>
+        <label class="mt-5 block text-sm font-medium">Contraseña</label>
+        <input id="loginPassword" type="password" required class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+        <p id="loginError" class="mt-2 hidden text-sm text-danger"></p>
+        <button type="submit" class="btn-primary mt-4 w-full">Ingresar</button>
+      </form>
+    </div>
 
-    <!-- APP SHELL -->
-    <div id="adminPanel" class="admin-shell hidden lg:flex">
-      <!-- Mobile top bar -->
-      <header class="lg:hidden sticky top-0 z-40 flex items-center justify-between gap-3 bg-sidebar px-4 py-3 text-on-dark">
-        <div class="flex items-center gap-3 min-w-0">
-          <div id="mobileAvatar" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white overflow-hidden"
-               style="background: var(--business-accent)">A</div>
-          <div class="min-w-0">
-            <p id="mobileBusinessName" class="truncate text-sm font-semibold text-white">Negocio</p>
-            <p class="text-meta-sm text-on-dark/60">Panel de gestión</p>
-          </div>
-        </div>
-        <button id="btnMobileNav" type="button" class="rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-on-dark"
-                aria-label="Abrir menú">Menú</button>
-      </header>
-
-      <!-- Sidebar -->
-      <aside id="sidebar" class="admin-sidebar ds-sidebar w-full lg:w-64 shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 hidden lg:flex lg:flex-col">
-        <div class="px-5 py-5 border-b border-white/10">
-          <div class="flex items-center gap-3">
-            <div id="sidebarAvatar" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white overflow-hidden"
-                 style="background: var(--business-accent)">A</div>
-            <div class="min-w-0">
-              <p id="sidebarBusinessName" class="truncate text-sm font-semibold text-white">Negocio</p>
-              <p class="text-meta-sm text-on-dark/60">Panel de gestión</p>
-            </div>
-          </div>
-        </div>
-        <nav id="sideNav" class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <button type="button" data-view="dashboard" class="nav-item ds-sidebar__item is-active flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>
-            Dashboard
-          </button>
-          <button type="button" data-view="agenda" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"/></svg>
-            Agenda
-          </button>
-          <button type="button" data-view="servicios" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>
-            Servicios
-          </button>
-          <button type="button" data-view="equipo" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-            Equipo
-          </button>
-          <button type="button" data-view="clientes" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            Clientes
-          </button>
-          <button type="button" data-view="planes" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-            Planes
-          </button>
-          <button type="button" data-view="productos" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-            Productos
-          </button>
-          <button type="button" data-view="movimientos" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Movimientos
-          </button>
-          <button type="button" data-view="contenido" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-            Contenido
-          </button>
-          <button type="button" data-view="estadisticas" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Estadísticas
-          </button>
-          <button type="button" data-view="configuracion" class="nav-item ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Configuración
-          </button>
-        </nav>
-        <div class="mt-auto border-t border-white/10 px-3 py-4 space-y-1">
-          <a id="linkMenu" href="/" class="ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            Ver sitio público
-          </a>
-          <button id="btnLogout" type="button" class="ds-sidebar__item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-white/5">
-            <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-            Cerrar sesión
-          </button>
-        </div>
+    <!-- APP -->
+    <div id="app" class="hidden min-h-screen lg:flex">
+      <aside class="ds-sidebar flex shrink-0 flex-col gap-1 p-4 lg:w-56">
+        <div class="font-display mb-4 px-2 text-sm font-black uppercase">Planeta Surf</div>
+        <button data-view="dashboard" class="nav-item ds-sidebar__item rounded px-3 py-2 text-left text-sm">Dashboard</button>
+        <button data-view="productos" class="nav-item ds-sidebar__item rounded px-3 py-2 text-left text-sm">Productos</button>
+        <button data-view="categorias" class="nav-item ds-sidebar__item rounded px-3 py-2 text-left text-sm">Categorías</button>
+        <button data-view="home" class="nav-item ds-sidebar__item rounded px-3 py-2 text-left text-sm">Contenido Home</button>
+        <button data-view="configuracion" class="nav-item ds-sidebar__item rounded px-3 py-2 text-left text-sm">Configuración</button>
+        <button id="btnLogout" class="ds-sidebar__item mt-auto rounded px-3 py-2 text-left text-sm">Cerrar sesión</button>
       </aside>
 
-      <!-- Content -->
-      <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
-
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6">
         <!-- DASHBOARD -->
-        <section id="view-dashboard" class="view is-active">
-          <header class="mb-6 md:mb-8">
-            <h1 class="text-h1"><span id="dashGreeting">Buenos días</span>, <span id="dashGreetingName">equipo</span></h1>
-            <p id="dashSubtitle" class="text-meta mt-1">0 turnos para hoy</p>
-          </header>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-            <div class="kpi-card p-4 md:p-5">
-              <p class="text-meta">Turnos hoy</p>
-              <p id="kpiHoy" class="kpi-value mt-1">0</p>
-              <p id="kpiHoySub" class="kpi-sub">confirmados</p>
-            </div>
-            <div class="kpi-card p-4 md:p-5">
-              <p class="text-meta">Esta semana</p>
-              <p id="kpiSemana" class="kpi-value mt-1">0</p>
-              <p id="kpiSemanaSub" class="kpi-sub">vs semana anterior</p>
-            </div>
-            <div class="kpi-card p-4 md:p-5">
-              <p class="text-meta">Ingresos estimados</p>
-              <p id="kpiIngresos" class="kpi-value mt-1 text-lg sm:text-metric">$ 0</p>
-              <p id="kpiIngresosSub" class="kpi-sub">esta semana</p>
-            </div>
-            <div class="kpi-card p-4 md:p-5">
-              <p class="text-meta">Sin cobrar</p>
-              <p id="kpiPendientes" class="kpi-value mt-1">0</p>
-              <p id="kpiPendientesSub" class="kpi-sub">sin cobrar</p>
-            </div>
+        <section id="view-dashboard" class="view">
+          <h1 class="mb-4">Dashboard</h1>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="ds-card p-4"><div class="text-meta">Productos activos</div><div id="kpiProductos" class="text-metric">0</div></div>
+            <div class="ds-card p-4"><div class="text-meta">En Home</div><div id="kpiHome" class="text-metric">0</div></div>
+            <div class="ds-card p-4"><div class="text-meta">Categorías</div><div id="kpiCategorias" class="text-metric">0</div></div>
           </div>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            <div>
-              <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-h2">Turnos de hoy</h2>
-                <button type="button" data-goto="agenda" class="text-sm font-semibold text-business-accent hover:text-business-accent-hover">Ver agenda</button>
-              </div>
-              <div id="dashHoyList" class="space-y-2.5"></div>
-            </div>
-            <div>
-              <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-h2">Próximos turnos</h2>
-                <button type="button" data-goto="agenda" class="text-sm font-semibold text-business-accent hover:text-business-accent-hover">Ver agenda</button>
-              </div>
-              <div id="dashProximosList" class="space-y-2.5"></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- AGENDA -->
-        <section id="view-agenda" class="view">
-          <header class="mb-5 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h1 class="text-h1">Agenda</h1>
-              <p class="text-meta mt-1">Turnos, calendario, horario y bloqueos.</p>
-            </div>
-            <div class="pill-group pill-group--vista" role="group" aria-label="Vista de agenda">
-              <button id="btnVistaLista" type="button" class="is-active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                  <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
-                </svg>
-                Lista
-              </button>
-              <button id="btnVistaCalendario" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                  <rect x="3" y="5" width="18" height="16" rx="2" />
-                  <path d="M16 3v4M8 3v4M3 11h18" />
-                </svg>
-                Calendario
-              </button>
-            </div>
-          </header>
-
-          <div class="ds-card p-4 md:p-5 mb-4">
-            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 class="text-h2">Turnos</h2>
-                <p class="text-meta-sm mt-0.5">Lista y calendario de reservas.</p>
-              </div>
-              <button id="btnToggleAgendar" type="button" class="btn-primary px-4 py-2 text-sm shrink-0">+ Agendar turno</button>
-            </div>
-
-            <div id="formAgendarManual" class="mb-4 hidden rounded-xl border border-border bg-content/60 p-4">
-              <h3 class="text-sm font-semibold text-primary mb-1">Agendar turno manual</h3>
-              <p class="text-meta-sm mb-4">Sin comprobante. Ideal para reservas por teléfono o presencial.</p>
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="manNombre">Nombre</label>
-                  <input id="manNombre" type="text" autocomplete="name" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" placeholder="Cliente" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="manTelefono">Teléfono</label>
-                  <div class="flex items-stretch">
-                    <span class="flex items-center whitespace-nowrap rounded-l-lg border border-r-0 border-border bg-neutral-bg px-3 text-sm font-semibold text-secondary">+54 9</span>
-                    <input id="manTelefono" type="tel" inputmode="numeric" maxlength="20" class="w-full rounded-r-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" placeholder="3364589907" />
-                  </div>
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="manServicio">Servicio</label>
-                  <select id="manServicio" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-                </div>
-                <div id="manProWrap" class="flex flex-col gap-1 hidden">
-                  <label class="label" for="manProfesional">Profesional</label>
-                  <select id="manProfesional" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="manFecha">Fecha</label>
-                  <input id="manFecha" type="date" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="manHorario">Horario</label>
-                  <select id="manHorario" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent">
-                    <option value="">Elegí fecha y servicio</option>
-                  </select>
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="manEstado">Estado</label>
-                  <select id="manEstado" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent">
-                    <option value="confirmada">Pagado / agendado</option>
-                    <option value="pendiente">Sin cobrar</option>
-                  </select>
-                </div>
-              </div>
-              <div class="mt-4 flex flex-wrap items-center gap-2">
-                <button id="btnGuardarAgendar" type="button" class="btn-primary px-4 py-2 text-sm">Guardar turno</button>
-                <button id="btnCancelarAgendar" type="button" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-neutral-bg">Cancelar</button>
-                <p id="manMsg" class="min-h-5 text-sm font-semibold"></p>
-              </div>
-            </div>
-
-            <div id="formModificarHorario" class="mb-4 hidden rounded-xl border border-border bg-content/60 p-4">
-              <h3 class="text-sm font-semibold text-primary mb-1">Modificar horario</h3>
-              <p id="modReservaInfo" class="text-meta-sm mb-4">—</p>
-              <input type="hidden" id="modReservaId" value="" />
-              <input type="hidden" id="modServiceId" value="" />
-              <input type="hidden" id="modProfessionalId" value="" />
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="modFecha">Nueva fecha</label>
-                  <input id="modFecha" type="date" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="modHorario">Nuevo horario</label>
-                  <select id="modHorario" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent">
-                    <option value="">Elegí fecha</option>
-                  </select>
-                </div>
-              </div>
-              <div class="mt-4 flex flex-wrap items-center gap-2">
-                <button id="btnGuardarModHorario" type="button" class="btn-primary px-4 py-2 text-sm">Guardar cambio</button>
-                <button id="btnCancelarModHorario" type="button" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-neutral-bg">Cancelar</button>
-                <p id="modMsg" class="min-h-5 text-sm font-semibold"></p>
-              </div>
-            </div>
-
-            <div id="filtrosLista" class="mb-4 flex flex-wrap items-center gap-2">
-              <label class="text-meta" for="filtroFecha">Fecha</label>
-              <input id="filtroFecha" type="date" class="rounded-lg border border-border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <label class="text-meta" for="filtroEstado">Estado</label>
-              <select id="filtroEstado" class="rounded-lg border border-border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent">
-                <option value="">Todos</option>
-                <option value="confirmada">Pagado</option>
-                <option value="pendiente">Sin cobrar</option>
-                <option value="concluida">Concluido</option>
-                <option value="cancelada">Cancelada</option>
-              </select>
-              <button id="btnFiltrarReservas" type="button" class="btn-primary px-3 py-1.5 text-sm">Filtrar</button>
-              <button id="btnLimpiarFiltro" type="button" class="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold hover:bg-neutral-bg">Todas</button>
-              <button id="btnExportarCSV" type="button" class="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold hover:bg-neutral-bg">Exportar CSV</button>
-            </div>
-
-            <div id="vistaLista">
-              <div id="reservasList" class="grid gap-3"></div>
-            </div>
-            <div id="vistaCalendario" class="hidden">
-              <div class="mb-3 flex flex-wrap items-center gap-3">
-                <label class="text-meta" id="calProLabel" for="calProfesional">Profesional</label>
-                <select id="calProfesional" class="rounded-lg border border-border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-                <div class="flex items-center gap-2">
-                  <button id="btnCalPrev" type="button" class="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold hover:bg-neutral-bg">← Anterior</button>
-                  <span id="calSemanaLabel" class="min-w-[150px] text-center text-sm font-semibold"></span>
-                  <button id="btnCalNext" type="button" class="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold hover:bg-neutral-bg">Siguiente →</button>
-                </div>
-              </div>
-              <div id="calGrid" class="overflow-x-auto rounded-xl border border-border"></div>
-            </div>
-          </div>
-
-          <div class="ds-card p-4 md:p-5 mb-4 space-y-4">
-            <div>
-              <h2 class="text-h2">Horario de atención</h2>
-              <p class="text-meta-sm mt-0.5">Definí los días y la franja horaria. Podés sumar una segunda franja si cortás al mediodía.</p>
-            </div>
-
-            <div>
-              <p class="label mb-2">Días que trabaja</p>
-              <div id="cfgDiasAtencion" class="flex flex-wrap gap-2" role="group" aria-label="Días de atención">
-                <button type="button" data-dia="1" class="dia-chip">Lun</button>
-                <button type="button" data-dia="2" class="dia-chip">Mar</button>
-                <button type="button" data-dia="3" class="dia-chip">Mié</button>
-                <button type="button" data-dia="4" class="dia-chip">Jue</button>
-                <button type="button" data-dia="5" class="dia-chip">Vie</button>
-                <button type="button" data-dia="6" class="dia-chip">Sáb</button>
-                <button type="button" data-dia="0" class="dia-chip">Dom</button>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 max-w-md">
-              <div class="flex flex-col gap-1">
-                <label class="label" for="cfgHoraInicio">Desde</label>
-                <input id="cfgHoraInicio" type="text" list="listaHorariosDia" inputmode="numeric" placeholder="09:00" autocomplete="off"
-                       class="rounded-lg border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="cfgHoraFin">Hasta</label>
-                <input id="cfgHoraFin" type="text" list="listaHorariosDia" inputmode="numeric" placeholder="20:00" autocomplete="off"
-                       class="rounded-lg border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-            </div>
-
-            <div id="franja2Block" class="hidden space-y-3 max-w-md">
-              <div class="flex items-center justify-between gap-2">
-                <p class="text-sm font-semibold text-primary">Franja 2</p>
-                <button id="btnQuitarFranja2" type="button" class="text-xs font-semibold text-danger hover:underline">Quitar franja 2</button>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgHoraInicio2">Desde</label>
-                  <input id="cfgHoraInicio2" type="text" list="listaHorariosDia" inputmode="numeric" placeholder="—" autocomplete="off"
-                         class="rounded-lg border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgHoraFin2">Hasta</label>
-                  <input id="cfgHoraFin2" type="text" list="listaHorariosDia" inputmode="numeric" placeholder="—" autocomplete="off"
-                         class="rounded-lg border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-              </div>
-            </div>
-
-            <button id="btnAgregarFranja2" type="button"
-                    class="rounded-lg border border-dashed border-border px-3 py-2 text-sm font-semibold text-primary hover:bg-white/70">
-              + Agregar franja horaria 2
-            </button>
-
-            <div class="flex flex-wrap items-center gap-2 pt-1">
-              <button id="btnGuardarHorario" type="button" class="btn-primary px-4 py-2 text-sm">Guardar horario</button>
-              <p id="horarioMsg" class="min-h-5 text-sm font-semibold"></p>
-            </div>
-          </div>
-
-          <!-- Bloqueos -->
-          <div class="ds-card p-4 md:p-5 mb-4">
-            <h2 class="text-h2 mb-3">Bloquear horarios</h2>
-            <div class="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-              <div class="flex flex-col gap-1" id="bloqProWrap">
-                <label class="label" for="bloqProfesional" id="bloqProLabel">Profesional</label>
-                <select id="bloqProfesional" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="bloqFecha">Fecha</label>
-                <input id="bloqFecha" type="date" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="bloqHorarioDesde">Horario desde</label>
-                <select id="bloqHorarioDesde" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="bloqHorarioHasta">Horario hasta</label>
-                <select id="bloqHorarioHasta" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-              </div>
-            </div>
-            <div class="mb-3 flex items-center gap-2">
-              <input id="bloqDiaCompleto" type="checkbox" class="h-4 w-4" style="accent-color: var(--business-accent)" />
-              <label for="bloqDiaCompleto" class="label">Día completo</label>
-            </div>
-            <div class="mb-3 flex flex-col gap-1">
-              <label class="label" for="bloqMotivo">Motivo</label>
-              <input id="bloqMotivo" type="text" placeholder="Ej: feriado" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-            </div>
-            <button id="btnCrearBloqueo" type="button" class="btn-primary">Crear bloqueo</button>
-            <p id="adminMessage" class="mt-2 min-h-5 text-sm font-semibold"></p>
-            <h3 class="text-h3 mt-6 mb-3">Bloqueos activos</h3>
-            <div id="bloqueosList" class="grid gap-2.5"></div>
-          </div>
-
-          <div class="ds-card p-4 md:p-5">
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <h2 class="text-h2">Bloqueos recurrentes</h2>
-                <p class="text-meta-sm mt-0.5">Se aplican automáticamente cada semana</p>
-              </div>
-              <button id="btnToggleBloqRec" type="button" class="btn-primary shrink-0 text-sm px-3 py-1.5">+ Nuevo</button>
-            </div>
-            <div id="formBloqRecContainer" class="hidden mt-4 rounded-xl border border-border bg-content p-4">
-              <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="recProfesional" id="recProLabel">Profesional</label>
-                  <select id="recProfesional" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="recDiaSemana">Día de la semana</label>
-                  <select id="recDiaSemana" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent">
-                    <option value="1">Lunes</option>
-                    <option value="2">Martes</option>
-                    <option value="3">Miércoles</option>
-                    <option value="4">Jueves</option>
-                    <option value="5">Viernes</option>
-                    <option value="6">Sábado</option>
-                    <option value="0">Domingo</option>
-                  </select>
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="recHorarioDesde">Horario desde</label>
-                  <select id="recHorarioDesde" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="recHorarioHasta">Horario hasta</label>
-                  <select id="recHorarioHasta" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-                </div>
-              </div>
-              <div class="mt-3 flex items-center gap-2">
-                <input id="recDiaCompleto" type="checkbox" class="h-4 w-4" style="accent-color: var(--business-accent)" />
-                <label for="recDiaCompleto" class="label">Día completo</label>
-              </div>
-              <div class="mt-3 flex flex-col gap-1">
-                <label class="label" for="recMotivo">Motivo</label>
-                <input id="recMotivo" type="text" placeholder="Ej: Capacitación" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="mt-3 flex gap-2">
-                <button id="btnGuardarBloqRec" type="button" class="btn-primary text-sm">Guardar bloqueo</button>
-                <button id="btnCancelarBloqRec" type="button" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-neutral-bg">Cancelar</button>
-              </div>
-              <p id="recMsg" class="mt-2 min-h-5 text-sm font-semibold"></p>
-            </div>
-            <div id="bloqueosRecurrentesList" class="mt-4 grid gap-2.5"></div>
-          </div>
-        </section>
-
-        <!-- SERVICIOS -->
-        <section id="view-servicios" class="view">
-          <header class="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h1 class="text-h1">Servicios</h1>
-              <p id="serviciosMeta" class="text-meta mt-1">0 activos · 0 total</p>
-            </div>
-            <button id="btnToggleServForm" type="button" class="btn-primary">+ Agregar servicio</button>
-          </header>
-          <div id="formServicio" class="ds-card p-4 md:p-5 mb-4 hidden">
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-              <input id="nuevoServNombre" type="text" placeholder="Nombre" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoServDesc" type="text" placeholder="Descripción" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoServDuracion" type="number" min="15" step="15" placeholder="Duración (min)" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoServPrecio" type="text" placeholder="Precio del servicio" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoServSena" type="text" placeholder="Seña a transferir" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoServCat" type="text" placeholder="Categoría (opcional)" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <select id="nuevoServProfesional" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" title="Profesional que atiende este servicio">
-                <option value="">Profesional (opcional)</option>
-              </select>
-              <button id="btnAgregarServicio" type="button" class="btn-primary">Guardar servicio</button>
-            </div>
-            <p class="mt-2 text-meta-sm">La seña es el monto que el cliente debe transferir para confirmar el turno.</p>
-            <label class="mt-3 flex items-center gap-2 text-sm font-semibold cursor-pointer">
-              <input id="servDestacado" type="checkbox" class="accent-[var(--business-accent)]" />
-              Destacado (aparece en la landing, antes del listado completo)
-            </label>
-
-            <div class="mt-4 rounded-xl border border-border bg-content/60 p-4 space-y-3">
-              <label class="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-                <input id="servDiasPropios" type="checkbox" class="accent-[var(--business-accent)]" />
-                Días distintos al local (este servicio no se hace todos los días)
-              </label>
-              <p class="text-meta-sm">Si no lo activás, se puede reservar cualquier día que atienda el local (o el profesional, si tiene horario propio).</p>
-              <div id="servDiasBlock" class="hidden">
-                <p class="label mb-2">Días en que se hace este servicio</p>
-                <div id="servDiasAtencion" class="flex flex-wrap gap-2" role="group" aria-label="Días del servicio">
-                  <button type="button" data-dia="1" class="dia-chip">Lun</button>
-                  <button type="button" data-dia="2" class="dia-chip">Mar</button>
-                  <button type="button" data-dia="3" class="dia-chip">Mié</button>
-                  <button type="button" data-dia="4" class="dia-chip">Jue</button>
-                  <button type="button" data-dia="5" class="dia-chip">Vie</button>
-                  <button type="button" data-dia="6" class="dia-chip">Sáb</button>
-                  <button type="button" data-dia="0" class="dia-chip">Dom</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-3 flex items-center gap-2">
-              <button id="btnCancelarEditServ" type="button" class="hidden rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-neutral-bg">Cancelar edición</button>
-              <p id="cfgServMsg" class="min-h-5 text-sm font-semibold"></p>
-            </div>
-          </div>
-          <div class="ds-card overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="admin-table w-full text-left text-sm">
-                <thead class="bg-content border-b border-border">
-                  <tr>
-                    <th class="px-4 py-3">Servicio</th>
-                    <th class="px-4 py-3">Categoría</th>
-                    <th class="px-4 py-3">Duración</th>
-                    <th class="px-4 py-3">Precio</th>
-                    <th class="px-4 py-3">Seña</th>
-                    <th class="px-4 py-3">Estado</th>
-                    <th class="px-4 py-3 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="serviciosAdminList"></tbody>
-              </table>
-            </div>
-            <p id="serviciosEmpty" class="hidden p-6 text-meta text-center">Todavía no hay servicios. Agregá el primero.</p>
-          </div>
-        </section>
-
-        <!-- EQUIPO -->
-        <section id="view-equipo" class="view">
-          <header class="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h1 class="text-h1">Equipo</h1>
-              <p class="text-meta mt-1">Profesionales que atienden turnos.</p>
-              <p id="planLimitHint" class="text-meta-sm mt-1 hidden"></p>
-            </div>
-            <button id="btnAgregarPro" type="button" class="btn-primary">+ Agregar profesional</button>
-          </header>
-          <div id="formPro" class="ds-card p-4 md:p-5 mb-4 hidden">
-            <input type="hidden" id="editingProId" value="" />
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div class="sm:col-span-2 flex flex-col gap-1">
-                <label class="label" for="nuevoProNombre">Nombre *</label>
-                <input id="nuevoProNombre" type="text" placeholder="Ej: Genaro Pérez" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="nuevoProEspecialidad">Especialidad / rol</label>
-                <input id="nuevoProEspecialidad" type="text" placeholder="Ej: Cosmetóloga, Depiladora, Micropigmentadora..." class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="nuevoProMatricula">Matrícula / credencial</label>
-                <input id="nuevoProMatricula" type="text" placeholder="Ej: MP 12345" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="sm:col-span-2 flex flex-col gap-1">
-                <label class="label" for="nuevoProBio">Perfil / bio</label>
-                <textarea id="nuevoProBio" rows="2" placeholder="Breve descripción del profesional" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent"></textarea>
-              </div>
-              <div class="sm:col-span-2 flex flex-col gap-1">
-                <label class="label">Servicios que atiende *</label>
-                <div id="nuevoProServicios" class="rounded-lg border border-border p-3 max-h-40 overflow-y-auto space-y-2 bg-white">
-                  <p class="text-meta-sm">Cargá servicios primero en la sección Servicios.</p>
-                </div>
-              </div>
-              <div class="sm:col-span-2 rounded-xl border border-border bg-content/60 p-4 space-y-3">
-                <label class="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-                  <input id="proHorarioPropio" type="checkbox" class="accent-[var(--business-accent)]" />
-                  Horario propio (distinto al del negocio)
-                </label>
-                <p class="text-meta-sm">Si no lo activás, usa el horario general de Configuración. Se refleja en la agenda y al pedir turno.</p>
-                <div id="proHorarioBlock" class="hidden space-y-3">
-                  <div>
-                    <p class="label mb-2">Días que atiende</p>
-                    <div id="proDiasAtencion" class="flex flex-wrap gap-2" role="group" aria-label="Días del profesional">
-                      <button type="button" data-dia="1" class="dia-chip">Lun</button>
-                      <button type="button" data-dia="2" class="dia-chip">Mar</button>
-                      <button type="button" data-dia="3" class="dia-chip">Mié</button>
-                      <button type="button" data-dia="4" class="dia-chip">Jue</button>
-                      <button type="button" data-dia="5" class="dia-chip">Vie</button>
-                      <button type="button" data-dia="6" class="dia-chip">Sáb</button>
-                      <button type="button" data-dia="0" class="dia-chip">Dom</button>
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1">
-                      <label class="label" for="proHoraInicio">Desde</label>
-                      <input id="proHoraInicio" type="text" list="listaHorariosDia" inputmode="numeric" placeholder="09:00" autocomplete="off"
-                             class="rounded-lg border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                      <label class="label" for="proHoraFin">Hasta</label>
-                      <input id="proHoraFin" type="text" list="listaHorariosDia" inputmode="numeric" placeholder="20:00" autocomplete="off"
-                             class="rounded-lg border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                    </div>
-                  </div>
-                  <div id="proFranja2Block" class="hidden space-y-3">
-                    <div class="flex items-center justify-between gap-2">
-                      <p class="text-sm font-semibold text-primary">Franja 2</p>
-                      <button id="btnProQuitarFranja2" type="button" class="text-xs font-semibold text-danger hover:underline">Quitar franja 2</button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                      <div class="flex flex-col gap-1">
-                        <label class="label" for="proHoraInicio2">Desde</label>
-                        <input id="proHoraInicio2" type="text" list="listaHorariosDia" inputmode="numeric" placeholder="—" autocomplete="off"
-                               class="rounded-lg border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                      </div>
-                      <div class="flex flex-col gap-1">
-                        <label class="label" for="proHoraFin2">Hasta</label>
-                        <input id="proHoraFin2" type="text" list="listaHorariosDia" inputmode="numeric" placeholder="—" autocomplete="off"
-                               class="rounded-lg border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                      </div>
-                    </div>
-                  </div>
-                  <button id="btnProAgregarFranja2" type="button"
-                          class="rounded-lg border border-dashed border-border px-3 py-2 text-sm font-semibold text-primary hover:bg-white/70">
-                    + Agregar franja horaria 2
-                  </button>
-                </div>
-              </div>
-              <div class="sm:col-span-2 flex flex-col gap-1" id="proFotoBlock">
-                <label class="label" for="nuevoProFoto">Foto</label>
-                <div class="flex flex-wrap items-center gap-3">
-                  <img id="nuevoProFotoPreview" src="" alt="" class="hidden h-14 w-14 rounded-full object-cover ring-1 ring-border" />
-                  <input id="nuevoProFoto" type="file" accept="image/*" class="text-sm" />
-                </div>
-                <p class="text-meta-sm">JPG/PNG hasta 5 MB. Si estás creando uno nuevo, guardá primero y después podés subir la foto al editar.</p>
-              </div>
-            </div>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <button id="btnGuardarPro" type="button" class="btn-primary">Guardar</button>
-              <button id="btnCancelarPro" type="button" class="rounded-lg border border-border px-3 py-2 text-sm font-semibold hover:bg-neutral-bg">Cancelar</button>
-            </div>
-            <p id="cfgProMsg" class="mt-2 min-h-5 text-sm font-semibold"></p>
-          </div>
-          <div id="prosAdminList" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
-        </section>
-
-        <!-- CLIENTES -->
-        <section id="view-clientes" class="view">
-          <header class="mb-6">
-            <h1 class="text-h1">Clientes</h1>
-            <p class="text-meta mt-1">Derivados de los turnos por teléfono.</p>
-            <div class="mt-4">
-              <input id="clientesSearch" type="search" class="search-input" placeholder="Buscar por nombre o teléfono..." autocomplete="off" />
-            </div>
-          </header>
-          <div class="ds-card overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="admin-table w-full text-left text-sm">
-                <thead class="bg-content border-b border-border">
-                  <tr>
-                    <th class="px-4 py-3">Cliente</th>
-                    <th class="px-4 py-3">Teléfono</th>
-                    <th class="px-4 py-3">Turnos</th>
-                    <th class="px-4 py-3">Última visita</th>
-                    <th class="px-4 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody id="clientesTableBody"></tbody>
-              </table>
-            </div>
-            <p id="clientesEmpty" class="hidden p-6 text-meta text-center">Todavía no hay clientes con turnos.</p>
-          </div>
-        </section>
-
-        <!-- PLANES -->
-        <section id="view-planes" class="view">
-          <header class="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h1 class="text-h1">Planes</h1>
-              <p class="text-meta mt-1">Packs de sesiones para tus clientes.</p>
-            </div>
-            <button id="btnTogglePlanForm" type="button" class="btn-primary">+ Agregar</button>
-          </header>
-          <div id="formPlan" class="ds-card p-4 md:p-5 mb-4 hidden">
-            <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <input id="nuevoPlanNombre" type="text" placeholder="Nombre del plan" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoPlanSesiones" type="number" min="1" placeholder="Sesiones" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoPlanPrecio" type="text" placeholder="Precio" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoPlanDesc" type="text" placeholder="Descripción" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-            </div>
-            <button id="btnAgregarPlanCliente" type="button" class="btn-primary mt-3">Guardar plan</button>
-            <p id="cfgPlanClienteMsg" class="mt-2 min-h-5 text-sm font-semibold"></p>
-          </div>
-          <div id="planesClienteList" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
         </section>
 
         <!-- PRODUCTOS -->
-        <section id="view-productos" class="view">
-          <header class="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h1 class="text-h1">Productos</h1>
-              <p id="productosMeta" class="text-meta mt-1">0 productos</p>
-            </div>
-            <button id="btnToggleProdForm" type="button" class="btn-primary">+ Nuevo producto</button>
-          </header>
-
-          <div id="formProducto" class="ds-card p-4 md:p-5 mb-4 hidden">
-            <input type="hidden" id="editingProdId" value="" />
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <input id="prodNombre" type="text" placeholder="Nombre del producto" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="prodCategoria" type="text" placeholder="Categoría (ej: Sueros, Cremas)" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-            </div>
-            <textarea id="prodDescripcion" rows="2" placeholder="Descripción (opcional)" class="mt-3 w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent"></textarea>
-            <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div class="flex flex-col gap-1">
-                <label class="label" for="prodPrecio">Precio ($)</label>
-                <input id="prodPrecio" type="number" min="0" step="1" placeholder="0" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="prodStock">Stock (vacío = sin control de stock)</label>
-                <input id="prodStock" type="number" min="0" step="1" placeholder="opcional" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-            </div>
-            <div class="mt-3 flex items-center gap-2">
-              <input id="prodDestacado" type="checkbox" class="h-4 w-4" style="accent-color: var(--business-accent)" />
-              <label for="prodDestacado" class="label">Destacado (aparece en la landing)</label>
-            </div>
-
-            <div class="mt-4">
-              <label class="label">Imagen</label>
-              <div class="flex flex-wrap items-center gap-3">
-                <label class="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm font-semibold hover:bg-neutral-bg">
-                  Subir desde mi PC
-                  <input id="prodFotoArchivo" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
-                </label>
-                <span class="text-meta-sm">JPG, PNG o WEBP · máx 5 MB</span>
-              </div>
-              <img id="prodFotoPreview" class="mt-2 hidden h-24 w-24 rounded-lg object-cover" alt="" />
-              <input id="prodImagenUrl" type="text" placeholder="O pegá una URL de imagen" class="mt-2 w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-            </div>
-
-            <div class="mt-4 flex items-center gap-2">
-              <button id="btnGuardarProducto" type="button" class="btn-primary">Guardar</button>
-              <button id="btnCancelarProducto" type="button" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-neutral-bg">Cancelar</button>
-              <p id="prodFormMsg" class="min-h-5 text-sm font-semibold"></p>
-            </div>
+        <section id="view-productos" class="view hidden">
+          <div class="mb-4 flex items-center justify-between">
+            <h1>Productos</h1>
+            <button id="btnNuevoProducto" class="btn-primary">+ Nuevo producto</button>
           </div>
 
-          <p id="productosMigracionAviso" class="hidden mb-4 rounded-xl border border-danger/30 bg-danger-bg p-4 text-sm text-danger"></p>
-
-          <div class="ds-card overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="admin-table w-full text-left text-sm">
-                <thead class="bg-content border-b border-border">
-                  <tr>
-                    <th class="px-4 py-3">Producto</th>
-                    <th class="px-4 py-3">Categoría</th>
-                    <th class="px-4 py-3">Precio</th>
-                    <th class="px-4 py-3">Stock</th>
-                    <th class="px-4 py-3">Estado</th>
-                    <th class="px-4 py-3 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="productosAdminList"></tbody>
-              </table>
-            </div>
-            <p id="productosEmpty" class="hidden p-6 text-meta text-center">Todavía no hay productos. Agregá el primero.</p>
-          </div>
-        </section>
-
-        <!-- MOVIMIENTOS -->
-        <section id="view-movimientos" class="view">
-          <header class="mb-6">
-            <h1 class="text-h1">Movimientos</h1>
-            <p class="text-meta mt-1">Registrá ingresos, gastos y seguí el balance de tu caja.</p>
-          </header>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6">
-            <div class="kpi-card mov-kpi-ingreso p-4 md:p-5">
-              <p class="text-meta">Ingresos</p>
-              <p id="movKpiIngresos" class="kpi-value mt-1 text-lg sm:text-metric">$ 0</p>
-            </div>
-            <div class="kpi-card mov-kpi-gasto p-4 md:p-5">
-              <p class="text-meta">Gastos</p>
-              <p id="movKpiGastos" class="kpi-value mt-1 text-lg sm:text-metric">$ 0</p>
-            </div>
-            <div class="kpi-card mov-kpi-balance p-4 md:p-5">
-              <p class="text-meta">Balance</p>
-              <p id="movKpiBalance" class="kpi-value mt-1 text-lg sm:text-metric">$ 0</p>
-            </div>
-          </div>
-
-          <div class="ds-card p-4 md:p-5 mb-4">
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <span class="inline-flex rounded-full bg-business-accent-light px-3 py-1 text-xs font-bold uppercase tracking-wide text-business-accent">Nuevo movimiento</span>
-              <p id="movFormMsg" class="min-h-5 text-sm font-semibold"></p>
-            </div>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-5">
-              <div class="flex flex-col gap-1">
-                <label class="label" for="movTipo">Tipo</label>
-                <select id="movTipo" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent">
-                  <option value="ingreso">Ingreso</option>
-                  <option value="gasto">Gasto</option>
-                </select>
-              </div>
-              <div class="flex flex-col gap-1 md:col-span-2">
-                <label class="label" for="movDescripcion">Descripción</label>
-                <input id="movDescripcion" type="text" placeholder="Ej: Seña turno, alquiler, insumos…" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="movCategoria">Categoría</label>
-                <select id="movCategoria" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent"></select>
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="movMonto">Monto ($)</label>
-                <input id="movMonto" type="number" min="0" step="0.01" placeholder="0" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="movFecha">Fecha</label>
-                <input id="movFecha" type="date" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-              <div class="flex items-end lg:col-span-4">
-                <button id="btnGuardarMovimiento" type="button" class="btn-primary">+ Agregar movimiento</button>
-                <button id="btnCancelarEditMov" type="button" class="ml-2 hidden rounded-lg border border-border px-3 py-2 text-sm font-semibold hover:bg-neutral-bg">Cancelar edición</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="ds-card overflow-hidden">
-            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
-              <h2 class="text-h2">Historial de movimientos</h2>
-              <div class="flex flex-wrap gap-2">
-                <select id="movFiltroMes" class="rounded-lg border border-border px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-business-accent">
-                  <option value="">Todos los meses</option>
-                </select>
-                <select id="movFiltroTipo" class="rounded-lg border border-border px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-business-accent">
-                  <option value="">Todo</option>
-                  <option value="ingreso">Ingresos</option>
-                  <option value="gasto">Gastos</option>
-                </select>
-                <input id="movBuscar" type="search" placeholder="Buscar…" class="rounded-lg border border-border px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              </div>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="admin-table w-full text-left text-sm">
-                <thead class="bg-content border-b border-border">
-                  <tr>
-                    <th class="px-4 py-3">Fecha</th>
-                    <th class="px-4 py-3">Tipo</th>
-                    <th class="px-4 py-3">Descripción</th>
-                    <th class="px-4 py-3">Categoría</th>
-                    <th class="px-4 py-3">Monto</th>
-                    <th class="px-4 py-3 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="movimientosList"></tbody>
-              </table>
-            </div>
-            <p id="movimientosEmpty" class="hidden p-6 text-meta text-center">Todavía no hay movimientos. Agregá el primero.</p>
-          </div>
-        </section>
-
-        <!-- CONTENIDO -->
-        <section id="view-contenido" class="view">
-          <header class="mb-6">
-            <h1 class="text-h1">Contenido</h1>
-            <p class="text-meta mt-1">Videos institucionales y galería "Pieles reales" de la landing.</p>
-          </header>
-
-          <p id="contenidoMigracionAviso" class="hidden mb-4 rounded-xl border border-danger/30 bg-danger-bg p-4 text-sm text-danger"></p>
-
-          <div class="ds-card p-4 md:p-6 mb-6">
-            <h2 class="text-h2 mb-3">Foto "Sobre nosotros"</h2>
-            <div class="flex flex-wrap items-center gap-4">
-              <div id="cfgAboutPreview" class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-canito-taupe text-2xl font-bold text-white ring-1 ring-border">
-                —
-              </div>
-              <div class="min-w-0 flex-1 space-y-2">
-                <p class="text-meta">Foto que aparece en la sección "Sobre nosotros" de la home.</p>
-                <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-slate-50">
-                  Cambiar foto
-                  <input id="cfgAboutInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
-                </label>
-                <p class="text-meta-sm">JPG, PNG, WEBP o GIF · máx. 5 MB. Medida recomendada: 1080×1350px (formato vertical 4:5).</p>
-                <p id="cfgAboutMsg" class="min-h-5 text-sm font-semibold"></p>
-              </div>
-            </div>
-          </div>
-
-          <div class="ds-card p-4 md:p-5 mb-6">
-            <div class="mb-3 flex items-center justify-between gap-2">
+          <form id="formProducto" class="ds-card mb-6 hidden space-y-4 p-4">
+            <input type="hidden" id="prodId" />
+            <div class="grid gap-4 sm:grid-cols-2">
               <div>
-                <h2 class="text-h2">Videos institucionales</h2>
-                <p class="text-meta-sm mt-0.5">Pegá un link (YouTube, Instagram, Vimeo) o subí el archivo directamente. Se abre en pestaña nueva al tocar la card.</p>
-                <p id="videosCountHint" class="text-meta-sm mt-0.5 font-semibold"></p>
+                <label class="text-sm font-medium">Nombre</label>
+                <input id="prodNombre" required class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium">Categoría</label>
+                <select id="prodCategoria" class="mt-1 w-full border border-border px-3 py-2 text-sm"><option value="">Sin categoría</option></select>
               </div>
             </div>
-            <div class="grid grid-cols-1 gap-2 md:grid-cols-4">
-              <input id="nuevoVideoTitulo" type="text" placeholder="Título (ej: Nuestro espacio)" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent md:col-span-2" />
-              <input id="nuevoVideoUrl" type="url" placeholder="https://…" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevoVideoOrden" type="number" min="0" placeholder="Orden" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
+            <div>
+              <label class="text-sm font-medium">Descripción</label>
+              <textarea id="prodDescripcion" rows="3" class="mt-1 w-full border border-border px-3 py-2 text-sm"></textarea>
             </div>
-            <div class="mt-2 flex items-center gap-2">
-              <span class="text-meta-sm text-secondary">o subí el archivo (MP4, WEBM, MOV):</span>
-              <input id="nuevoVideoArchivo" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-m4v" class="rounded-lg border border-border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
+            <div class="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label class="text-sm font-medium">Precio</label>
+                <input id="prodPrecio" type="number" min="0" step="1" required class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium">Precio promocional</label>
+                <input id="prodPrecioPromo" type="number" min="0" step="1" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium">Stock (vacío = sin control)</label>
+                <input id="prodStock" type="number" min="0" step="1" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
             </div>
-            <div class="mt-3 flex items-center gap-2">
-              <button id="btnAgregarVideo" type="button" class="btn-primary">Guardar video</button>
-              <button id="btnCancelarEditVideo" type="button" class="hidden rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-neutral-bg">Cancelar edición</button>
-              <p id="videoFormMsg" class="min-h-5 text-sm font-semibold"></p>
+            <div>
+              <label class="text-sm font-medium">Etiqueta</label>
+              <input id="prodEtiqueta" list="etiquetasSugeridas" class="mt-1 w-full border border-border px-3 py-2 text-sm" placeholder="Ej: NUEVO, SALE..." />
+              <datalist id="etiquetasSugeridas">
+                <option value="NUEVO"></option><option value="DESTACADO"></option><option value="OFERTA"></option>
+                <option value="SALE"></option><option value="ÚLTIMAS UNIDADES"></option><option value="AGOTADO"></option>
+              </datalist>
             </div>
-            <div id="videoUploadProgress" class="hidden mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-bg">
-              <div id="videoUploadBar" class="h-full bg-business-accent transition-all" style="width: 0%"></div>
+            <div class="flex flex-wrap gap-6">
+              <label class="flex items-center gap-2 text-sm"><input id="prodDestacado" type="checkbox" /> Producto destacado</label>
+              <label class="flex items-center gap-2 text-sm"><input id="prodDisponible" type="checkbox" checked /> Disponible</label>
+              <label class="flex items-center gap-2 text-sm"><input id="prodMostrarHome" type="checkbox" /> Mostrar en Home</label>
+              <div id="prodOrdenHomeWrap" class="hidden flex items-center gap-2 text-sm">
+                Orden en Home: <input id="prodOrdenHome" type="number" min="0" class="w-20 border border-border px-2 py-1 text-sm" />
+              </div>
             </div>
-            <div id="videosAdminList" class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
-            <p id="videosAdminEmpty" class="hidden p-4 text-meta text-center">Todavía no cargaste ningún video.</p>
-          </div>
 
-          <div class="ds-card p-4 md:p-5">
-            <div class="mb-3">
-              <h2 class="text-h2">Galería "Pieles reales"</h2>
-              <p class="text-meta-sm mt-0.5">Fotos reales de gabinete y resultados. Nada de stock.</p>
-              <p class="text-meta-sm mt-0.5 text-secondary/80">Medida recomendada: 1080×1350px (formato vertical 4:5).</p>
-              <p id="fotosCountHint" class="text-meta-sm mt-0.5 font-semibold"></p>
+            <div id="prodImagenesSection" class="hidden">
+              <label class="text-sm font-medium">Imágenes</label>
+              <div id="prodImagenesList" class="mt-2 flex flex-wrap gap-3"></div>
+              <input id="prodImagenInput" type="file" accept="image/*" class="mt-2 text-sm" />
+              <p class="text-meta-sm mt-1">La primera imagen es la principal. Subí una y elegí "Marcar como principal" para cambiarla.</p>
             </div>
-            <div class="grid grid-cols-1 gap-2 md:grid-cols-4">
-              <input id="nuevaFotoTitulo" type="text" placeholder="Título (opcional)" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent md:col-span-2" />
-              <input id="nuevaFotoOrden" type="number" min="0" placeholder="Orden" class="rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
-              <input id="nuevaFotoArchivo" type="file" accept="image/*" class="rounded-lg border border-border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-business-accent" />
+            <p id="prodImagenesHint" class="text-meta-sm">Guardá el producto para poder subir imágenes.</p>
+
+            <p id="prodMensaje" class="hidden text-sm"></p>
+            <div class="flex gap-2">
+              <button type="submit" class="btn-primary">Guardar</button>
+              <button type="button" id="btnCancelarProducto" class="text-sm text-secondary underline">Cancelar</button>
             </div>
-            <div class="mt-3 flex items-center gap-2">
-              <button id="btnAgregarFoto" type="button" class="btn-primary">Subir foto</button>
-              <p id="fotoFormMsg" class="min-h-5 text-sm font-semibold"></p>
-            </div>
-            <div id="galeriaAdminList" class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4"></div>
-            <p id="galeriaAdminEmpty" class="hidden p-4 text-meta text-center">Todavía no subiste ninguna foto.</p>
+          </form>
+
+          <div class="ds-card overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-content text-left text-meta-sm uppercase">
+                <tr><th class="p-3">Producto</th><th class="p-3">Categoría</th><th class="p-3">Precio</th><th class="p-3">Home</th><th class="p-3">Estado</th><th class="p-3">Acciones</th></tr>
+              </thead>
+              <tbody id="productosTableBody"></tbody>
+            </table>
           </div>
         </section>
 
-        <!-- ESTADÍSTICAS -->
-        <section id="view-estadisticas" class="view">
-          <header class="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <!-- CATEGORÍAS -->
+        <section id="view-categorias" class="view hidden">
+          <div class="mb-4 flex items-center justify-between">
+            <h1>Categorías</h1>
+            <button id="btnNuevaCategoria" class="btn-primary">+ Nueva categoría</button>
+          </div>
+          <form id="formCategoria" class="ds-card mb-6 hidden space-y-4 p-4">
+            <input type="hidden" id="catId" />
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="text-sm font-medium">Nombre</label>
+                <input id="catNombre" required class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium">Orden</label>
+                <input id="catOrden" type="number" min="0" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <label class="flex items-center gap-2 text-sm"><input id="catActivo" type="checkbox" checked /> Activa</label>
+            <div id="catImagenSection" class="hidden">
+              <label class="text-sm font-medium">Imagen (tile de la Home)</label>
+              <div id="catImagenPreview" class="mt-2 h-32 w-32 overflow-hidden border border-border"></div>
+              <input id="catImagenInput" type="file" accept="image/*" class="mt-2 text-sm" />
+            </div>
+            <p id="catImagenHint" class="text-meta-sm">Guardá la categoría para poder subir la imagen.</p>
+            <p id="catMensaje" class="hidden text-sm"></p>
+            <div class="flex gap-2">
+              <button type="submit" class="btn-primary">Guardar</button>
+              <button type="button" id="btnCancelarCategoria" class="text-sm text-secondary underline">Cancelar</button>
+            </div>
+          </form>
+          <div class="ds-card overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-content text-left text-meta-sm uppercase">
+                <tr><th class="p-3">Nombre</th><th class="p-3">Slug</th><th class="p-3">Orden</th><th class="p-3">Estado</th><th class="p-3">Acciones</th></tr>
+              </thead>
+              <tbody id="categoriasTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- HOME -->
+        <section id="view-home" class="view hidden">
+          <h1 class="mb-4">Contenido de Home</h1>
+
+          <div class="ds-card mb-6 space-y-4 p-4">
+            <div class="text-h3">Textos del hero</div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="text-sm font-medium">Título — línea 1</label>
+                <input id="heroLinea1" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="text-sm font-medium">Título — línea 2</label>
+                <input id="heroLinea2" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
+            </div>
             <div>
-              <h1 class="text-h1">Estadísticas</h1>
-              <p class="text-meta mt-1">Turnos y caja del negocio.</p>
+              <label class="text-sm font-medium">Subtítulo</label>
+              <input id="heroSubtitulo" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
             </div>
-            <div class="pill-group" role="group" aria-label="Período de estadísticas">
-              <button id="btnStatsSemana" type="button" class="is-active">Semanas</button>
-              <button id="btnStatsMes" type="button">Meses</button>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="grid grid-cols-2 gap-2">
+                <input id="heroCta1Texto" placeholder="Texto botón 1" class="border border-border px-3 py-2 text-sm" />
+                <input id="heroCta1Link" placeholder="Link botón 1" class="border border-border px-3 py-2 text-sm" />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <input id="heroCta2Texto" placeholder="Texto botón 2" class="border border-border px-3 py-2 text-sm" />
+                <input id="heroCta2Link" placeholder="Link botón 2" class="border border-border px-3 py-2 text-sm" />
+              </div>
             </div>
-          </header>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
-            <div class="kpi-card p-4 md:p-5">
-              <p class="text-meta">Total turnos</p>
-              <p id="statTotal" class="kpi-value mt-1">0</p>
-              <p id="statTotalTrend" class="kpi-sub">vs período anterior</p>
-            </div>
-            <div class="kpi-card p-4 md:p-5">
-              <p class="text-meta">Pagados</p>
-              <p id="statConfirmados" class="kpi-value mt-1">0</p>
-              <p id="statConfirmadosTrend" class="kpi-sub">vs período anterior</p>
-            </div>
-            <div class="kpi-card p-4 md:p-5">
-              <p class="text-meta">Cancelados</p>
-              <p id="statCancelados" class="kpi-value mt-1">0</p>
-              <p id="statCanceladosTrend" class="kpi-sub">vs período anterior</p>
-            </div>
-            <div class="kpi-card p-4 md:p-5">
-              <p class="text-meta">Ingresos est. turnos</p>
-              <p id="statIngresos" class="kpi-value mt-1 text-lg sm:text-metric">$ 0</p>
-              <p id="statIngresosTrend" class="kpi-sub">vs período anterior</p>
-            </div>
+            <p id="heroMensaje" class="hidden text-sm"></p>
+            <button id="btnGuardarHeroTexto" class="btn-primary">Guardar textos</button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6">
-            <div class="kpi-card mov-kpi-ingreso p-4 md:p-5">
-              <p class="text-meta">Caja · Ingresos</p>
-              <p id="statCajaIngresos" class="kpi-value mt-1 text-lg sm:text-metric">$ 0</p>
-              <p id="statCajaIngresosTrend" class="kpi-sub">período actual</p>
+          <div class="ds-card mb-6 space-y-4 p-4">
+            <div class="text-h3">Barra de beneficios (los 3 íconos debajo del hero)</div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <input id="beneficio1Titulo" placeholder="Título 1" class="border border-border px-3 py-2 text-sm" />
+              <input id="beneficio1Subtitulo" placeholder="Subtítulo 1" class="border border-border px-3 py-2 text-sm" />
+              <input id="beneficio2Titulo" placeholder="Título 2" class="border border-border px-3 py-2 text-sm" />
+              <input id="beneficio2Subtitulo" placeholder="Subtítulo 2" class="border border-border px-3 py-2 text-sm" />
+              <input id="beneficio3Titulo" placeholder="Título 3" class="border border-border px-3 py-2 text-sm" />
+              <input id="beneficio3Subtitulo" placeholder="Subtítulo 3" class="border border-border px-3 py-2 text-sm" />
             </div>
-            <div class="kpi-card mov-kpi-gasto p-4 md:p-5">
-              <p class="text-meta">Caja · Gastos</p>
-              <p id="statCajaGastos" class="kpi-value mt-1 text-lg sm:text-metric">$ 0</p>
-              <p id="statCajaGastosTrend" class="kpi-sub">período actual</p>
-            </div>
-            <div class="kpi-card mov-kpi-balance p-4 md:p-5">
-              <p class="text-meta">Caja · Balance</p>
-              <p id="statCajaBalance" class="kpi-value mt-1 text-lg sm:text-metric">$ 0</p>
-              <p id="statCajaBalanceTrend" class="kpi-sub">ingresos − gastos</p>
-            </div>
+            <p id="beneficiosMensaje" class="hidden text-sm"></p>
+            <button id="btnGuardarBeneficios" class="btn-primary">Guardar beneficios</button>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            <div class="ds-card p-4 md:p-5">
-              <h2 class="text-h2 mb-4">Turnos por período</h2>
-              <div id="statsBars" class="min-h-[180px]"></div>
-            </div>
-            <div class="ds-card p-4 md:p-5">
-              <h2 class="text-h2 mb-4">Servicios más pedidos</h2>
-              <div id="statsServicios" class="space-y-3 mb-6"></div>
-              <h2 class="text-h2 mb-3">Ingresos por período</h2>
-              <div id="statsIngresos" class="min-h-[140px]"></div>
-              <h2 class="text-h2 mb-3 mt-6">Por estado</h2>
-              <div id="statsPie" class="flex flex-col sm:flex-row items-center gap-6"></div>
-            </div>
-            <div class="ds-card p-4 md:p-5 lg:col-span-2">
-              <h2 class="text-h2 mb-4">Caja por período</h2>
-              <div id="statsCaja" class="min-h-[160px]"></div>
-            </div>
+          <div class="ds-card space-y-3 p-4">
+            <div class="text-h3">Imágenes del hero (galería, máx. 6)</div>
+            <div id="heroSlidesList" class="flex flex-wrap gap-3"></div>
+            <input id="heroSlideInput" type="file" accept="image/*" class="text-sm" />
           </div>
         </section>
 
         <!-- CONFIGURACIÓN -->
-        <section id="view-configuracion" class="view">
-          <header class="mb-6">
-            <h1 class="text-h1">Configuración</h1>
-            <p class="text-meta mt-1">Datos del negocio, transferencia y contraseña.</p>
-          </header>
-
-          <div class="ds-card p-4 md:p-6 mb-4">
-            <h2 class="text-h2 mb-3">Foto de perfil</h2>
-            <div class="flex flex-wrap items-center gap-4">
-              <div id="cfgLogoPreview" class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-business-accent text-2xl font-bold text-white ring-1 ring-border">
-                —
+        <section id="view-configuracion" class="view hidden">
+          <h1 class="mb-4">Configuración de tienda</h1>
+          <form id="formConfig" class="ds-card mb-6 space-y-4 p-4">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="text-sm font-medium">Nombre de la tienda</label>
+                <input id="cfgNombre" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
               </div>
-              <div class="min-w-0 flex-1 space-y-2">
-                <p class="text-meta">Se muestra en tu sitio público y en el panel.</p>
-                <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-slate-50">
-                  Cambiar foto
-                  <input id="cfgLogoInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" />
-                </label>
-                <p class="text-meta-sm">JPG, PNG, WEBP o GIF · máx. 5 MB (las fotos del celu se optimizan al subir)</p>
-                <p id="cfgLogoMsg" class="min-h-5 text-sm font-semibold"></p>
+              <div>
+                <label class="text-sm font-medium">Color de marca</label>
+                <input id="cfgColor" type="color" class="mt-1 h-10 w-20 border border-border" />
               </div>
             </div>
-          </div>
-
-          <div class="ds-card p-4 md:p-6 mb-4 space-y-6">
             <div>
-              <h2 class="text-h2 mb-3">Datos generales</h2>
-              <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgNombre">Nombre del negocio</label>
-                  <input id="cfgNombre" type="text" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgWhatsapp">WhatsApp (solo números)</label>
-                  <input id="cfgWhatsapp" type="text" placeholder="5491112345678" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgCategoria">Categoría</label>
-                  <select id="cfgCategoria" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent">
-                    <option value="estetica">Estética</option>
-                  </select>
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgCiudad">Ciudad</label>
-                  <input id="cfgCiudad" type="text" placeholder="San Nicolás de los Arroyos" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1 md:col-span-2">
-                  <label class="label" for="cfgDireccion">Dirección</label>
-                  <input id="cfgDireccion" type="text" placeholder="Calle y número" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgColor">Color de marca</label>
-                  <input id="cfgColor" type="color" value="#6366F1" class="h-10 w-full rounded-lg border border-border px-1 py-1 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-              </div>
+              <label class="text-sm font-medium">Dirección</label>
+              <input id="cfgDireccion" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
             </div>
-
             <div>
-              <h2 class="text-h2 mb-3">Datos de transferencia</h2>
-              <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgAlias">Alias</label>
-                  <input id="cfgAlias" type="text" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgCbu">CBU</label>
-                  <input id="cfgCbu" type="text" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="label" for="cfgTitular">Titular</label>
-                  <input id="cfgTitular" type="text" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
-                </div>
-              </div>
-              <button id="btnGuardarNegocio" type="button" class="btn-primary mt-3">Guardar cambios</button>
-              <p id="cfgNegocioMsg" class="mt-2 min-h-5 text-sm font-semibold"></p>
+              <label class="text-sm font-medium">Horario (texto libre para la barra superior)</label>
+              <input id="cfgHorario" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
             </div>
-          </div>
-
-          <div class="ds-card p-4 md:p-6 mb-4">
-            <h2 class="text-h2 mb-1">Tu plan CMR</h2>
-            <p id="cfgPlanInfo" class="text-meta">—</p>
-            <p class="text-meta-sm mt-2">Para mejorar tu plan contactá a CMR Software.</p>
-          </div>
-
-          <div class="ds-card p-4 md:p-6">
-            <h2 class="text-h2 mb-3">Cambiar contraseña</h2>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div class="flex flex-col gap-1">
-                <label class="label" for="cfgPassActual">Contraseña actual</label>
-                <input id="cfgPassActual" type="password" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="text-sm font-medium">Instagram (URL)</label>
+                <input id="cfgInstagram" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
               </div>
-              <div class="flex flex-col gap-1">
-                <label class="label" for="cfgPassNuevo">Nueva contraseña</label>
-                <input id="cfgPassNuevo" type="password" class="rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-business-accent" />
+              <div>
+                <label class="text-sm font-medium">WhatsApp (solo números, con código de país)</label>
+                <input id="cfgWhatsapp" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
               </div>
             </div>
-            <button id="btnCambiarPass" type="button" class="mt-3 rounded-lg bg-sidebar px-4 py-2 font-semibold text-white hover:opacity-90">Cambiar contraseña</button>
-            <p id="cfgPassMsg" class="mt-2 min-h-5 text-sm font-semibold"></p>
-          </div>
+            <div>
+              <label class="text-sm font-medium">Logo</label>
+              <div id="cfgLogoPreview" class="mt-2 h-16 w-16 overflow-hidden rounded-full border border-border"></div>
+              <input id="cfgLogoInput" type="file" accept="image/*" class="mt-2 text-sm" />
+            </div>
+            <p id="cfgMensaje" class="hidden text-sm"></p>
+            <button type="submit" class="btn-primary">Guardar cambios</button>
+          </form>
+
+          <form id="formPassword" class="ds-card space-y-4 p-4">
+            <div class="text-h3">Cambiar contraseña</div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <input id="pwActual" type="password" placeholder="Contraseña actual" required class="border border-border px-3 py-2 text-sm" />
+              <input id="pwNueva" type="password" placeholder="Contraseña nueva (mín. 6)" required class="border border-border px-3 py-2 text-sm" />
+            </div>
+            <p id="pwMensaje" class="hidden text-sm"></p>
+            <button type="submit" class="btn-primary">Actualizar contraseña</button>
+          </form>
         </section>
-
       </main>
     </div>
 
-    <datalist id="listaHorariosDia"></datalist>
-    <script src="/admin.js?v=20260802-foto-5mb"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/admin.js"></script>
   </body>
 </html>

@@ -1,10 +1,10 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Canito Skin — Tailwind theme
+ * Planeta Surf — Tailwind theme
  * Valores → CSS custom properties en public/globals.css (fuente de verdad).
  *
- * Marca fija (un solo negocio): accent = business-accent = oliva.
+ * Marca fija (un solo negocio): accent = business-accent = ink (negro).
  * No hay accent por tenant.
  */
 const config: Config = {
@@ -50,11 +50,12 @@ const config: Config = {
         ],
       },
       colors: {
-        canito: {
-          oliva: "var(--canito-oliva)",
-          taupe: "var(--canito-taupe)",
-          crema: "var(--canito-crema)",
-          carbon: "var(--canito-carbon)",
+        brand: {
+          ink: "var(--ps-ink)",
+          paper: "var(--ps-paper)",
+          mist: "var(--ps-mist)",
+          line: "var(--ps-line)",
+          accent: "var(--ps-accent)",
         },
         accent: {
           DEFAULT: "var(--accent)",
