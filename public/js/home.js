@@ -75,5 +75,22 @@
           <div class="text-xs font-semibold uppercase tracking-wide text-white">Ver más →</div>
         </div>
       </a>`).join("");
+
+    const prevBtn = document.getElementById("categoriasPrev");
+    const nextBtn = document.getElementById("categoriasNext");
+    const scrollAmount = () => Math.round(grid.clientWidth * 0.8);
+    function actualizarFlechas() {
+      const max = grid.scrollWidth - grid.clientWidth - 4;
+      prevBtn.style.opacity = grid.scrollLeft <= 4 ? "0" : "1";
+      prevBtn.style.pointerEvents = grid.scrollLeft <= 4 ? "none" : "auto";
+      nextBtn.style.opacity = grid.scrollLeft >= max ? "0" : "1";
+      nextBtn.style.pointerEvents = grid.scrollLeft >= max ? "none" : "auto";
+    }
+    if (grid.scrollWidth > grid.clientWidth) {
+      prevBtn.addEventListener("click", () => grid.scrollBy({ left: -scrollAmount(), behavior: "smooth" }));
+      nextBtn.addEventListener("click", () => grid.scrollBy({ left: scrollAmount(), behavior: "smooth" }));
+      grid.addEventListener("scroll", actualizarFlechas);
+      actualizarFlechas();
+    }
   } catch (_) { /* sin datos */ }
 })();
