@@ -20,6 +20,13 @@ function parseArrayField(value) {
   return [];
 }
 
+function parseListInput(value) {
+  // Body puede llegar como array (JSON) o como string separada por comas (form).
+  if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
+  if (typeof value === "string") return value.split(",").map((v) => v.trim()).filter(Boolean);
+  return [];
+}
+
 function mapProductoRow(row, categoriasById) {
   const categoria = row.categoria_id != null ? categoriasById.get(Number(row.categoria_id)) || null : null;
   return {
@@ -39,6 +46,7 @@ function mapProductoRow(row, categoriasById) {
     activo: USE_SQLITE ? row.activo !== 0 : row.activo !== false,
     disponible: USE_SQLITE ? row.disponible !== 0 : row.disponible !== false,
     stock: row.stock ?? null,
+    talles: parseArrayField(row.talles),
     createdAt: row.created_at,
   };
 }
@@ -77,6 +85,7 @@ function applyFiltersAndSort(productos, query) {
   if (query.disponible === "1") result = result.filter((p) => p.disponible);
   if (query.promocion === "1") result = result.filter((p) => p.precioPromocional != null && p.precioPromocional < p.precio);
   if (query.destacado === "1") result = result.filter((p) => p.destacado);
+  if (query.talle) result = result.filter((p) => p.talles.includes(query.talle));
   if (query.q) {
     const q = String(query.q).toLowerCase().trim();
     result = result.filter((p) => p.nombre.toLowerCase().includes(q) || p.descripcion.toLowerCase().includes(q));
@@ -152,7 +161,8 @@ function parseProductoBody(body = {}) {
   const ordenHome = mostrarEnHome && ordenHomeRaw !== "" && ordenHomeRaw != null ? Math.trunc(Number(ordenHomeRaw)) : null;
   const disponible = body.disponible !== false && body.disponible !== "false";
   const stock = body.stock === "" || body.stock == null ? null : Math.max(0, Math.trunc(Number(body.stock) || 0));
-  return { nombre, descripcion, precio, precioPromocional, categoriaId, etiqueta, destacado, mostrarEnHome, ordenHome, disponible, stock };
+  const talles = parseListInput(body.talles);
+  return { nombre, descripcion, precio, precioPromocional, categoriaId, etiqueta, destacado, mostrarEnHome, ordenHome, disponible, stock, talles };
 }
 
 function validateProductoBody(p) {
@@ -171,10 +181,11 @@ router.post("/admin/productos", requireAdmin, async (req, res, next) => {
 
     if (USE_SQLITE) {
       const result = await dbRun(
-        `INSERT INTO productos (nombre, descripcion, precio, precio_promocional, categoria_id, etiqueta, destacado, mostrar_en_home, orden_home, disponible, stock)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO productos (nombre, descripcion, precio, precio_promocional, categoria_id, etiqueta, destacado, mostrar_en_home, orden_home, disponible, stock, talles)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [parsed.nombre, parsed.descripcion, parsed.precio, parsed.precioPromocional, parsed.categoriaId, parsed.etiqueta,
-          parsed.destacado ? 1 : 0, parsed.mostrarEnHome ? 1 : 0, parsed.ordenHome, parsed.disponible ? 1 : 0, parsed.stock]
+          parsed.destacado ? 1 : 0, parsed.mostrarEnHome ? 1 : 0, parsed.ordenHome, parsed.disponible ? 1 : 0, parsed.stock,
+          JSON.stringify(parsed.talles)]
       );
       const row = await dbGet("SELECT * FROM productos WHERE id = ?", [result.lastID]);
       return res.status(201).json(mapProductoRow(row, await getCategoriasById()));
@@ -192,6 +203,7 @@ router.post("/admin/productos", requireAdmin, async (req, res, next) => {
         orden_home: parsed.ordenHome,
         disponible: parsed.disponible,
         stock: parsed.stock,
+        talles: parsed.talles,
         activo: true,
       }).select().single();
       if (error) {
@@ -214,11 +226,11 @@ router.put("/admin/productos/:id", requireAdmin, async (req, res, next) => {
     if (USE_SQLITE) {
       await dbRun(
         `UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, precio_promocional = ?, categoria_id = ?, etiqueta = ?,
-           destacado = ?, mostrar_en_home = ?, orden_home = ?, disponible = ?, stock = ?, activo = ?,
+           destacado = ?, mostrar_en_home = ?, orden_home = ?, disponible = ?, stock = ?, talles = ?, activo = ?,
            updated_at = datetime('now') WHERE id = ?`,
         [parsed.nombre, parsed.descripcion, parsed.precio, parsed.precioPromocional, parsed.categoriaId, parsed.etiqueta,
           parsed.destacado ? 1 : 0, parsed.mostrarEnHome ? 1 : 0, parsed.ordenHome, parsed.disponible ? 1 : 0, parsed.stock,
-          activo ? 1 : 0, req.params.id]
+          JSON.stringify(parsed.talles), activo ? 1 : 0, req.params.id]
       );
     } else if (USE_SUPABASE) {
       const { error } = await supabase.from("productos").update({
@@ -233,6 +245,7 @@ router.put("/admin/productos/:id", requireAdmin, async (req, res, next) => {
         orden_home: parsed.ordenHome,
         disponible: parsed.disponible,
         stock: parsed.stock,
+        talles: parsed.talles,
         activo,
         updated_at: new Date().toISOString(),
       }).eq("id", req.params.id);

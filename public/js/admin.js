@@ -99,6 +99,7 @@
     precioPromo: document.getElementById("prodPrecioPromo"),
     stock: document.getElementById("prodStock"),
     etiqueta: document.getElementById("prodEtiqueta"),
+    talles: document.getElementById("prodTalles"),
     destacado: document.getElementById("prodDestacado"),
     disponible: document.getElementById("prodDisponible"),
     mostrarHome: document.getElementById("prodMostrarHome"),
@@ -128,6 +129,7 @@
     prodFields.precioPromo.value = producto?.precioPromocional ?? "";
     prodFields.stock.value = producto?.stock ?? "";
     prodFields.etiqueta.value = producto?.etiqueta || "";
+    prodFields.talles.value = (producto?.talles || []).join(", ");
     prodFields.destacado.checked = Boolean(producto?.destacado);
     prodFields.disponible.checked = producto ? producto.disponible : true;
     prodFields.mostrarHome.checked = Boolean(producto?.mostrarEnHome);
@@ -209,6 +211,7 @@
       precioPromocional: prodFields.precioPromo.value,
       categoriaId: prodFields.categoria.value,
       etiqueta: prodFields.etiqueta.value,
+      talles: prodFields.talles.value,
       destacado: prodFields.destacado.checked,
       disponible: prodFields.disponible.checked,
       mostrarEnHome: prodFields.mostrarHome.checked,
@@ -267,7 +270,7 @@
   function productoToBody(p) {
     return {
       nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, precioPromocional: p.precioPromocional ?? "",
-      categoriaId: p.categoriaId ?? "", etiqueta: p.etiqueta || "",
+      categoriaId: p.categoriaId ?? "", etiqueta: p.etiqueta || "", talles: (p.talles || []).join(","),
       destacado: p.destacado, disponible: p.disponible, mostrarEnHome: p.mostrarEnHome, ordenHome: p.ordenHome ?? "", stock: p.stock ?? "",
     };
   }

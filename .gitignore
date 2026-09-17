@@ -12,5 +12,6 @@ planetasurf.sqlite
 planetasurf.sqlite-shm
 planetasurf.sqlite-wal
 .vercel
+.vercel-canitoskin-backup
 .env*
 .claude/settings.local.json

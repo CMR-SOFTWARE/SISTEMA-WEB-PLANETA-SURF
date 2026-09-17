@@ -98,6 +98,7 @@ create table if not exists productos (
   activo boolean not null default true,
   disponible boolean not null default true,
   stock integer,
+  talles text[] not null default '{}',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

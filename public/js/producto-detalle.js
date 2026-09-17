@@ -37,6 +37,12 @@
   document.getElementById("prodDisponibilidad").textContent = producto.disponible ? "Disponible" : "Sin stock por el momento";
   document.getElementById("prodDescripcion").textContent = producto.descripcion || "";
 
+  if (producto.talles?.length) {
+    document.getElementById("prodTallesWrap").classList.remove("hidden");
+    document.getElementById("prodTalles").innerHTML = producto.talles
+      .map((t) => `<span class="border border-brand-line px-3 py-1 text-sm">${escapeHtml(t)}</span>`).join("");
+  }
+
   const imagenes = [producto.imagenPrincipal, ...(producto.imagenesAdicionales || [])].filter(Boolean);
   const principal = document.getElementById("galeriaPrincipal");
   const miniaturas = document.getElementById("galeriaMiniaturas");

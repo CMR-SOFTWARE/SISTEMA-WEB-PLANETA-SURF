@@ -80,13 +80,19 @@
                 <input id="prodStock" type="number" min="0" step="1" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
               </div>
             </div>
-            <div>
-              <label class="text-sm font-medium">Etiqueta</label>
-              <input id="prodEtiqueta" list="etiquetasSugeridas" class="mt-1 w-full border border-border px-3 py-2 text-sm" placeholder="Ej: NUEVO, SALE..." />
-              <datalist id="etiquetasSugeridas">
-                <option value="NUEVO"></option><option value="DESTACADO"></option><option value="OFERTA"></option>
-                <option value="SALE"></option><option value="ÚLTIMAS UNIDADES"></option><option value="AGOTADO"></option>
-              </datalist>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="text-sm font-medium">Etiqueta</label>
+                <input id="prodEtiqueta" list="etiquetasSugeridas" class="mt-1 w-full border border-border px-3 py-2 text-sm" placeholder="Ej: NUEVO, SALE..." />
+                <datalist id="etiquetasSugeridas">
+                  <option value="NUEVO"></option><option value="DESTACADO"></option><option value="OFERTA"></option>
+                  <option value="SALE"></option><option value="ÚLTIMAS UNIDADES"></option><option value="AGOTADO"></option>
+                </datalist>
+              </div>
+              <div>
+                <label class="text-sm font-medium">Talles (separados por coma)</label>
+                <input id="prodTalles" placeholder="Ropa: S, M, L, XL — Calzado: 38, 39, 40, 41" class="mt-1 w-full border border-border px-3 py-2 text-sm" />
+              </div>
             </div>
             <div class="flex flex-wrap gap-6">
               <label class="flex items-center gap-2 text-sm"><input id="prodDestacado" type="checkbox" /> Producto destacado</label>

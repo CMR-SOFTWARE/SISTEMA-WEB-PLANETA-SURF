@@ -141,10 +141,15 @@ async function initSqliteSchema() {
       activo INTEGER NOT NULL DEFAULT 1,
       disponible INTEGER NOT NULL DEFAULT 1,
       stock INTEGER,
+      talles TEXT NOT NULL DEFAULT '[]',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
+
+  try {
+    await dbRun("ALTER TABLE productos ADD COLUMN talles TEXT NOT NULL DEFAULT '[]'");
+  } catch (_) { /* la columna ya existe */ }
 
   const business = await dbGet("SELECT id FROM business LIMIT 1");
   if (!business) {
