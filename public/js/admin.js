@@ -361,18 +361,13 @@
     const mensaje = document.getElementById("catMensaje");
     try {
       const id = document.getElementById("catId").value;
-      let categoria;
       if (id) {
         await api(`/admin/categorias/${id}`, { method: "PUT", body: JSON.stringify(body) });
-        categoriasCache = await api("/admin/categorias");
-        categoria = categoriasCache.find((c) => String(c.id) === id);
       } else {
-        categoria = await api("/admin/categorias", { method: "POST", body: JSON.stringify(body) });
-        categoriasCache = await api("/admin/categorias");
+        await api("/admin/categorias", { method: "POST", body: JSON.stringify(body) });
       }
-      showMensaje(mensaje, "Guardado.");
       await loadCategorias();
-      abrirFormCategoria(categoria);
+      catForm.classList.add("hidden");
     } catch (error) {
       showMensaje(mensaje, error.message, "error");
     }
