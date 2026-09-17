@@ -131,6 +131,9 @@ async function initSqliteSchema() {
       descripcion TEXT DEFAULT '',
       precio REAL NOT NULL DEFAULT 0,
       precio_promocional REAL,
+      promocion_tipo TEXT,
+      promocion_valor REAL,
+      promocion_titulo TEXT,
       categoria_id INTEGER REFERENCES categorias(id) ON DELETE SET NULL,
       imagen_principal TEXT,
       imagenes_adicionales TEXT NOT NULL DEFAULT '[]',
@@ -150,6 +153,17 @@ async function initSqliteSchema() {
   try {
     await dbRun("ALTER TABLE productos ADD COLUMN talles TEXT NOT NULL DEFAULT '[]'");
   } catch (_) { /* la columna ya existe */ }
+  try {
+    await dbRun("ALTER TABLE productos ADD COLUMN promocion_tipo TEXT");
+    await dbRun("ALTER TABLE productos ADD COLUMN promocion_valor REAL");
+    await dbRun("ALTER TABLE productos ADD COLUMN promocion_titulo TEXT");
+    // Migra el precio_promocional viejo (campo suelto, sin tipo) a una
+    // promocion de tipo "precio_fijo" para no perder datos ya cargados.
+    await dbRun(`
+      UPDATE productos SET promocion_tipo = 'precio_fijo', promocion_valor = precio_promocional
+      WHERE precio_promocional IS NOT NULL AND precio_promocional > 0 AND precio_promocional < precio
+    `);
+  } catch (_) { /* las columnas ya existen */ }
 
   const business = await dbGet("SELECT id FROM business LIMIT 1");
   if (!business) {

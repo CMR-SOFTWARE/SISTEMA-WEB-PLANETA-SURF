@@ -27,14 +27,32 @@ function parseListInput(value) {
   return [];
 }
 
+// Precio final ya con el descuento aplicado, o null si no tiene promo activa.
+function computePrecioPromocional(precio, promocionTipo, promocionValor) {
+  if (!promocionTipo || promocionValor == null) return null;
+  if (promocionTipo === "porcentaje") {
+    const pct = Math.min(99, Math.max(1, Number(promocionValor)));
+    return Math.round(precio * (1 - pct / 100));
+  }
+  if (promocionTipo === "precio_fijo") {
+    const valor = Number(promocionValor);
+    return valor > 0 && valor < precio ? valor : null;
+  }
+  return null;
+}
+
 function mapProductoRow(row, categoriasById) {
   const categoria = row.categoria_id != null ? categoriasById.get(Number(row.categoria_id)) || null : null;
+  const precio = Number(row.precio) || 0;
   return {
     id: row.id,
     nombre: row.nombre,
     descripcion: row.descripcion || "",
-    precio: Number(row.precio) || 0,
-    precioPromocional: row.precio_promocional != null ? Number(row.precio_promocional) : null,
+    precio,
+    precioPromocional: computePrecioPromocional(precio, row.promocion_tipo, row.promocion_valor),
+    promocionTipo: row.promocion_tipo || null,
+    promocionValor: row.promocion_valor != null ? Number(row.promocion_valor) : null,
+    promocionTitulo: row.promocion_titulo || null,
     categoriaId: row.categoria_id ?? null,
     categoria,
     imagenPrincipal: row.imagen_principal || null,
@@ -83,7 +101,7 @@ function applyFiltersAndSort(productos, query) {
     if (Number.isFinite(max)) result = result.filter((p) => (p.precioPromocional ?? p.precio) <= max);
   }
   if (query.disponible === "1") result = result.filter((p) => p.disponible);
-  if (query.promocion === "1") result = result.filter((p) => p.precioPromocional != null && p.precioPromocional < p.precio);
+  if (query.promocion === "1") result = result.filter((p) => p.precioPromocional != null);
   if (query.destacado === "1") result = result.filter((p) => p.destacado);
   if (query.talle) result = result.filter((p) => p.talles.includes(query.talle));
   if (query.q) {
@@ -151,8 +169,6 @@ function parseProductoBody(body = {}) {
   const nombre = String(body.nombre || "").trim().slice(0, 120);
   const descripcion = String(body.descripcion || "").trim().slice(0, 1000);
   const precio = Number(body.precio);
-  const precioPromocionalRaw = body.precioPromocional;
-  const precioPromocional = precioPromocionalRaw === "" || precioPromocionalRaw == null ? null : Number(precioPromocionalRaw);
   const categoriaId = body.categoriaId === "" || body.categoriaId == null ? null : Number(body.categoriaId);
   const etiqueta = String(body.etiqueta || "").trim().slice(0, 40) || null;
   const destacado = body.destacado === true || body.destacado === "true";
@@ -162,14 +178,26 @@ function parseProductoBody(body = {}) {
   const disponible = body.disponible !== false && body.disponible !== "false";
   const stock = body.stock === "" || body.stock == null ? null : Math.max(0, Math.trunc(Number(body.stock) || 0));
   const talles = parseListInput(body.talles);
-  return { nombre, descripcion, precio, precioPromocional, categoriaId, etiqueta, destacado, mostrarEnHome, ordenHome, disponible, stock, talles };
+
+  const tienePromocion = body.tienePromocion === true || body.tienePromocion === "true";
+  const promocionTipo = tienePromocion && (body.promocionTipo === "porcentaje" || body.promocionTipo === "precio_fijo")
+    ? body.promocionTipo : null;
+  const promocionValorRaw = body.promocionValor;
+  const promocionValor = tienePromocion && promocionValorRaw !== "" && promocionValorRaw != null
+    ? Number(promocionValorRaw) : null;
+  const promocionTitulo = tienePromocion ? (String(body.promocionTitulo || "").trim().slice(0, 60) || null) : null;
+
+  return { nombre, descripcion, precio, categoriaId, etiqueta, destacado, mostrarEnHome, ordenHome, disponible, stock, talles, promocionTipo, promocionValor, promocionTitulo };
 }
 
 function validateProductoBody(p) {
   if (!p.nombre || p.nombre.length < 2) return "El nombre es obligatorio.";
   if (!(p.precio > 0)) return "El precio tiene que ser mayor a 0.";
-  if (p.precioPromocional != null && !(p.precioPromocional > 0)) return "El precio promocional tiene que ser mayor a 0.";
-  if (p.precioPromocional != null && p.precioPromocional >= p.precio) return "El precio promocional tiene que ser menor al precio normal.";
+  if (p.promocionTipo) {
+    if (!(p.promocionValor > 0)) return "El valor de la promoción tiene que ser mayor a 0.";
+    if (p.promocionTipo === "porcentaje" && p.promocionValor >= 100) return "El porcentaje de descuento tiene que ser menor a 100.";
+    if (p.promocionTipo === "precio_fijo" && p.promocionValor >= p.precio) return "El precio de la promoción tiene que ser menor al precio normal.";
+  }
   return null;
 }
 
@@ -181,11 +209,11 @@ router.post("/admin/productos", requireAdmin, async (req, res, next) => {
 
     if (USE_SQLITE) {
       const result = await dbRun(
-        `INSERT INTO productos (nombre, descripcion, precio, precio_promocional, categoria_id, etiqueta, destacado, mostrar_en_home, orden_home, disponible, stock, talles)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [parsed.nombre, parsed.descripcion, parsed.precio, parsed.precioPromocional, parsed.categoriaId, parsed.etiqueta,
+        `INSERT INTO productos (nombre, descripcion, precio, categoria_id, etiqueta, destacado, mostrar_en_home, orden_home, disponible, stock, talles, promocion_tipo, promocion_valor, promocion_titulo)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [parsed.nombre, parsed.descripcion, parsed.precio, parsed.categoriaId, parsed.etiqueta,
           parsed.destacado ? 1 : 0, parsed.mostrarEnHome ? 1 : 0, parsed.ordenHome, parsed.disponible ? 1 : 0, parsed.stock,
-          JSON.stringify(parsed.talles)]
+          JSON.stringify(parsed.talles), parsed.promocionTipo, parsed.promocionValor, parsed.promocionTitulo]
       );
       const row = await dbGet("SELECT * FROM productos WHERE id = ?", [result.lastID]);
       return res.status(201).json(mapProductoRow(row, await getCategoriasById()));
@@ -195,7 +223,6 @@ router.post("/admin/productos", requireAdmin, async (req, res, next) => {
         nombre: parsed.nombre,
         descripcion: parsed.descripcion,
         precio: parsed.precio,
-        precio_promocional: parsed.precioPromocional,
         categoria_id: parsed.categoriaId,
         etiqueta: parsed.etiqueta,
         destacado: parsed.destacado,
@@ -204,6 +231,9 @@ router.post("/admin/productos", requireAdmin, async (req, res, next) => {
         disponible: parsed.disponible,
         stock: parsed.stock,
         talles: parsed.talles,
+        promocion_tipo: parsed.promocionTipo,
+        promocion_valor: parsed.promocionValor,
+        promocion_titulo: parsed.promocionTitulo,
         activo: true,
       }).select().single();
       if (error) {
@@ -225,19 +255,20 @@ router.put("/admin/productos/:id", requireAdmin, async (req, res, next) => {
 
     if (USE_SQLITE) {
       await dbRun(
-        `UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, precio_promocional = ?, categoria_id = ?, etiqueta = ?,
-           destacado = ?, mostrar_en_home = ?, orden_home = ?, disponible = ?, stock = ?, talles = ?, activo = ?,
+        `UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, categoria_id = ?, etiqueta = ?,
+           destacado = ?, mostrar_en_home = ?, orden_home = ?, disponible = ?, stock = ?, talles = ?,
+           promocion_tipo = ?, promocion_valor = ?, promocion_titulo = ?, activo = ?,
            updated_at = datetime('now') WHERE id = ?`,
-        [parsed.nombre, parsed.descripcion, parsed.precio, parsed.precioPromocional, parsed.categoriaId, parsed.etiqueta,
+        [parsed.nombre, parsed.descripcion, parsed.precio, parsed.categoriaId, parsed.etiqueta,
           parsed.destacado ? 1 : 0, parsed.mostrarEnHome ? 1 : 0, parsed.ordenHome, parsed.disponible ? 1 : 0, parsed.stock,
-          JSON.stringify(parsed.talles), activo ? 1 : 0, req.params.id]
+          JSON.stringify(parsed.talles), parsed.promocionTipo, parsed.promocionValor, parsed.promocionTitulo,
+          activo ? 1 : 0, req.params.id]
       );
     } else if (USE_SUPABASE) {
       const { error } = await supabase.from("productos").update({
         nombre: parsed.nombre,
         descripcion: parsed.descripcion,
         precio: parsed.precio,
-        precio_promocional: parsed.precioPromocional,
         categoria_id: parsed.categoriaId,
         etiqueta: parsed.etiqueta,
         destacado: parsed.destacado,
@@ -246,6 +277,9 @@ router.put("/admin/productos/:id", requireAdmin, async (req, res, next) => {
         disponible: parsed.disponible,
         stock: parsed.stock,
         talles: parsed.talles,
+        promocion_tipo: parsed.promocionTipo,
+        promocion_valor: parsed.promocionValor,
+        promocion_titulo: parsed.promocionTitulo,
         activo,
         updated_at: new Date().toISOString(),
       }).eq("id", req.params.id);

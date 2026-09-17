@@ -33,6 +33,12 @@
   document.getElementById("prodPrecio").innerHTML = tienePromo
     ? `<span class="text-secondary line-through">${formatPrice(producto.precio)}</span> <span class="ml-2 font-semibold text-brand-accent">${formatPrice(producto.precioPromocional)}</span>`
     : `<span class="font-semibold">${formatPrice(producto.precio)}</span>`;
+  if (tienePromo && producto.promocionTitulo) {
+    const tituloEl = document.createElement("p");
+    tituloEl.className = "mt-1 text-sm font-semibold text-brand-accent";
+    tituloEl.textContent = producto.promocionTitulo;
+    document.getElementById("prodPrecio").after(tituloEl);
+  }
 
   document.getElementById("prodDisponibilidad").textContent = producto.disponible ? "Disponible" : "Sin stock por el momento";
   document.getElementById("prodDescripcion").textContent = producto.descripcion || "";

@@ -96,7 +96,13 @@
     categoria: document.getElementById("prodCategoria"),
     descripcion: document.getElementById("prodDescripcion"),
     precio: document.getElementById("prodPrecio"),
-    precioPromo: document.getElementById("prodPrecioPromo"),
+    tienePromocion: document.getElementById("prodTienePromocion"),
+    promocionCampos: document.getElementById("prodPromocionCampos"),
+    promocionTipo: document.getElementById("prodPromocionTipo"),
+    promocionValorLabel: document.getElementById("prodPromocionValorLabel"),
+    promocionValor: document.getElementById("prodPromocionValor"),
+    promocionTitulo: document.getElementById("prodPromocionTitulo"),
+    promocionPreview: document.getElementById("prodPromocionPreview"),
     stock: document.getElementById("prodStock"),
     etiqueta: document.getElementById("prodEtiqueta"),
     talles: document.getElementById("prodTalles"),
@@ -116,6 +122,31 @@
     prodFields.ordenHomeWrap.classList.toggle("hidden", !prodFields.mostrarHome.checked);
   });
 
+  function actualizarPreviewPromocion() {
+    const precio = Number(prodFields.precio.value) || 0;
+    const valor = Number(prodFields.promocionValor.value) || 0;
+    if (!prodFields.tienePromocion.checked || !valor || !precio) {
+      prodFields.promocionPreview.textContent = "";
+      return;
+    }
+    const precioFinal = prodFields.promocionTipo.value === "porcentaje"
+      ? Math.round(precio * (1 - Math.min(99, valor) / 100))
+      : valor;
+    prodFields.promocionPreview.textContent = precioFinal > 0 && precioFinal < precio
+      ? `Se va a mostrar: ${formatPrice(precio)} tachado → ${formatPrice(precioFinal)}`
+      : "El precio de la promoción tiene que ser menor al precio normal.";
+  }
+
+  prodFields.tienePromocion.addEventListener("change", () => {
+    prodFields.promocionCampos.classList.toggle("hidden", !prodFields.tienePromocion.checked);
+    actualizarPreviewPromocion();
+  });
+  prodFields.promocionTipo.addEventListener("change", () => {
+    prodFields.promocionValorLabel.textContent = prodFields.promocionTipo.value === "porcentaje" ? "Descuento (%)" : "Precio promocional";
+    actualizarPreviewPromocion();
+  });
+  [prodFields.promocionValor, prodFields.precio].forEach((el) => el.addEventListener("input", actualizarPreviewPromocion));
+
   document.getElementById("btnNuevoProducto").addEventListener("click", () => abrirFormProducto(null));
   document.getElementById("btnCancelarProducto").addEventListener("click", () => prodForm.classList.add("hidden"));
 
@@ -126,8 +157,15 @@
     prodFields.nombre.value = producto?.nombre || "";
     prodFields.descripcion.value = producto?.descripcion || "";
     prodFields.precio.value = producto?.precio ?? "";
-    prodFields.precioPromo.value = producto?.precioPromocional ?? "";
     prodFields.stock.value = producto?.stock ?? "";
+    const tienePromo = Boolean(producto?.promocionTipo);
+    prodFields.tienePromocion.checked = tienePromo;
+    prodFields.promocionCampos.classList.toggle("hidden", !tienePromo);
+    prodFields.promocionTipo.value = producto?.promocionTipo || "porcentaje";
+    prodFields.promocionValorLabel.textContent = prodFields.promocionTipo.value === "porcentaje" ? "Descuento (%)" : "Precio promocional";
+    prodFields.promocionValor.value = producto?.promocionValor ?? "";
+    prodFields.promocionTitulo.value = producto?.promocionTitulo || "";
+    prodFields.promocionPreview.textContent = "";
     prodFields.etiqueta.value = producto?.etiqueta || "";
     prodFields.talles.value = (producto?.talles || []).join(", ");
     prodFields.destacado.checked = Boolean(producto?.destacado);
@@ -208,7 +246,10 @@
       nombre: prodFields.nombre.value,
       descripcion: prodFields.descripcion.value,
       precio: prodFields.precio.value,
-      precioPromocional: prodFields.precioPromo.value,
+      tienePromocion: prodFields.tienePromocion.checked,
+      promocionTipo: prodFields.promocionTipo.value,
+      promocionValor: prodFields.promocionValor.value,
+      promocionTitulo: prodFields.promocionTitulo.value,
       categoriaId: prodFields.categoria.value,
       etiqueta: prodFields.etiqueta.value,
       talles: prodFields.talles.value,
@@ -220,16 +261,13 @@
     };
     const mensaje = document.getElementById("prodMensaje");
     try {
-      let producto;
       if (prodFields.id.value) {
         await api(`/admin/productos/${prodFields.id.value}`, { method: "PUT", body: JSON.stringify(body) });
-        producto = (await api("/admin/productos")).find((p) => String(p.id) === prodFields.id.value);
       } else {
-        producto = await api("/admin/productos", { method: "POST", body: JSON.stringify(body) });
+        await api("/admin/productos", { method: "POST", body: JSON.stringify(body) });
       }
-      showMensaje(mensaje, "Guardado.");
       await loadProductos();
-      abrirFormProducto(producto);
+      prodForm.classList.add("hidden");
     } catch (error) {
       showMensaje(mensaje, error.message, "error");
     }
@@ -269,7 +307,9 @@
 
   function productoToBody(p) {
     return {
-      nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, precioPromocional: p.precioPromocional ?? "",
+      nombre: p.nombre, descripcion: p.descripcion, precio: p.precio,
+      tienePromocion: Boolean(p.promocionTipo), promocionTipo: p.promocionTipo || "porcentaje",
+      promocionValor: p.promocionValor ?? "", promocionTitulo: p.promocionTitulo || "",
       categoriaId: p.categoriaId ?? "", etiqueta: p.etiqueta || "", talles: (p.talles || []).join(","),
       destacado: p.destacado, disponible: p.disponible, mostrarEnHome: p.mostrarEnHome, ordenHome: p.ordenHome ?? "", stock: p.stock ?? "",
     };
@@ -346,6 +386,7 @@
         <td class="p-3">${escapeHtml(c.nombre)}</td>
         <td class="p-3">${escapeHtml(c.slug)}</td>
         <td class="p-3">
+          <span class="mr-2 tabular-nums">${i + 1}</span>
           <button data-mover="${c.id}" data-dir="up" ${i === 0 ? "disabled" : ""} class="disabled:opacity-30" title="Subir">▲</button>
           <button data-mover="${c.id}" data-dir="down" ${i === categoriasCache.length - 1 ? "disabled" : ""} class="disabled:opacity-30" title="Bajar">▼</button>
         </td>
