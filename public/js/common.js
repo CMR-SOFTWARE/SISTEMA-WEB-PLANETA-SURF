@@ -161,6 +161,8 @@ window.PS = (function () {
         <div class="mt-3">
           <div class="text-sm">${escapeHtml(producto.nombre)}</div>
           <div class="mt-1 text-sm">${productoPrecioHtml(producto)}</div>
+          ${producto.precioPromocional != null && producto.promocionTitulo
+            ? `<div class="text-xs font-semibold text-brand-accent">${escapeHtml(producto.promocionTitulo)}</div>` : ""}
         </div>
       </a>`;
   }
