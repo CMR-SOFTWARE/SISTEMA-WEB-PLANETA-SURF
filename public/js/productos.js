@@ -10,8 +10,6 @@
   const els = {
     buscar: document.getElementById("fBuscar"),
     categoria: document.getElementById("fCategoria"),
-    precioMin: document.getElementById("fPrecioMin"),
-    precioMax: document.getElementById("fPrecioMax"),
     talleWrap: document.getElementById("fTalleWrap"),
     talle: document.getElementById("fTalle"),
     disponible: document.getElementById("fDisponible"),
@@ -63,8 +61,6 @@
     const params = new URLSearchParams();
     if (els.buscar.value.trim()) params.set("q", els.buscar.value.trim());
     if (els.categoria.value) params.set("categoria", els.categoria.value);
-    if (els.precioMin.value) params.set("precioMin", els.precioMin.value);
-    if (els.precioMax.value) params.set("precioMax", els.precioMax.value);
     if (els.talle.value) params.set("talle", els.talle.value);
     if (els.disponible.checked) params.set("disponible", "1");
     if (els.promocion.checked) params.set("promocion", "1");
@@ -96,15 +92,13 @@
     debounceTimer = setTimeout(refrescar, 250);
   }
 
-  [els.categoria, els.precioMin, els.precioMax, els.talle, els.disponible, els.promocion, els.destacado, els.orden]
+  [els.categoria, els.talle, els.disponible, els.promocion, els.destacado, els.orden]
     .forEach((el) => el.addEventListener(el.type === "checkbox" || el.tagName === "SELECT" ? "change" : "input", onFilterChange));
   els.buscar.addEventListener("input", onFilterChange);
 
   els.limpiar.addEventListener("click", () => {
     els.buscar.value = "";
     els.categoria.value = "";
-    els.precioMin.value = "";
-    els.precioMax.value = "";
     els.talle.value = "";
     els.disponible.checked = false;
     els.promocion.checked = false;
