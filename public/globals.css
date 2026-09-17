@@ -435,8 +435,8 @@ h3,
   position: relative;
   display: block;
   flex: 0 0 auto;
-  width: 240px;
-  aspect-ratio: 4 / 5;
+  width: 340px;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: var(--radius-card);
   text-decoration: none;
