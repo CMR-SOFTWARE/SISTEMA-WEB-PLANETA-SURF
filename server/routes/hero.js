@@ -5,7 +5,7 @@ const { imageUpload, uploadImage, removeImage } = require("../storage");
 
 const router = express.Router();
 
-const MAX_HERO_SLIDES = 6;
+const MAX_HERO_SLIDES = 4;
 
 function mapSlideRow(row) {
   return {
