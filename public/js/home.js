@@ -71,8 +71,8 @@
       <a href="/productos?categoria=${encodeURIComponent(c.slug)}" class="ps-category-tile">
         ${c.imagenUrl ? `<img src="${escapeHtml(c.imagenUrl)}" alt="${escapeHtml(c.nombre)}" loading="lazy" />` : `<div class="h-full w-full bg-brand-mist"></div>`}
         <div class="ps-category-tile__label">
-          <div class="font-display text-lg font-black uppercase">${escapeHtml(c.nombre)}</div>
-          <div class="text-xs font-semibold uppercase tracking-wide">Ver más →</div>
+          <div class="font-display text-lg font-black uppercase text-white">${escapeHtml(c.nombre)}</div>
+          <div class="text-xs font-semibold uppercase tracking-wide text-white">Ver más →</div>
         </div>
       </a>`).join("");
   } catch (_) { /* sin datos */ }
