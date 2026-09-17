@@ -461,7 +461,7 @@
     document.getElementById("cfgHorario").value = config.horarioTexto || "";
     document.getElementById("cfgInstagram").value = config.instagramUrl || "";
     document.getElementById("cfgWhatsapp").value = config.whatsappNumero || "";
-    document.getElementById("cfgLogoPreview").innerHTML = config.logoUrl ? `<img src="${escapeHtml(config.logoUrl)}" class="h-full w-full object-cover" />` : "";
+    document.getElementById("cfgLogoPreview").innerHTML = `<img src="${escapeHtml(config.logoUrl || "/images/logo-header.png")}" class="h-full w-full object-contain" />`;
   }
 
   document.getElementById("formConfig").addEventListener("submit", async (e) => {
@@ -490,7 +490,7 @@
     fd.append("logo", file);
     try {
       const data = await api("/admin/logo", { method: "PATCH", body: fd });
-      document.getElementById("cfgLogoPreview").innerHTML = `<img src="${escapeHtml(data.logoUrl)}" class="h-full w-full object-cover" />`;
+      document.getElementById("cfgLogoPreview").innerHTML = `<img src="${escapeHtml(data.logoUrl)}" class="h-full w-full object-contain" />`;
     } catch (error) {
       alert(error.message);
     }

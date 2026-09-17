@@ -78,7 +78,7 @@ window.PS = (function () {
     el.innerHTML = `
       <div class="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <a href="/" class="flex shrink-0 items-center gap-2" aria-label="Ir al inicio">
-          <img src="/favicon.png" alt="" class="h-9 w-9 rounded-full" />
+          <img src="${escapeHtml(config?.logoUrl || "/images/logo-header.png")}" alt="" class="h-10 w-auto object-contain" />
           <span class="font-display text-sm font-black uppercase tracking-tight">${escapeHtml(config?.nombre || "Planeta Surf")}</span>
         </a>
         <nav class="hidden items-center gap-7 lg:flex" aria-label="Secciones">
