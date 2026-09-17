@@ -69,16 +69,18 @@
       </section>
 
       <!-- CATEGORÍAS -->
-      <section class="relative mx-auto max-w-[1440px] pb-14">
-        <div id="categoriasGrid" class="ps-scroll-row flex gap-3 overflow-x-auto px-4 sm:px-6"></div>
-        <button id="categoriasPrev" type="button" aria-label="Ver categorías anteriores"
-          class="absolute left-1 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 shadow-card sm:flex">
-          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <button id="categoriasNext" type="button" aria-label="Ver más categorías"
-          class="absolute right-1 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 shadow-card sm:flex">
-          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
+      <section class="mx-auto max-w-[1440px] pb-14">
+        <div class="relative">
+          <div id="categoriasGrid" class="ps-scroll-row flex gap-3 overflow-x-auto px-4 sm:px-6"></div>
+          <button id="categoriasPrev" type="button" aria-label="Ver categorías anteriores"
+            class="absolute left-1 top-1/2 z-10 flex -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 opacity-0 pointer-events-none shadow-card transition-opacity">
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button id="categoriasNext" type="button" aria-label="Ver más categorías"
+            class="absolute right-1 top-1/2 z-10 flex -translate-y-1/2 items-center justify-center rounded-full bg-white p-2 opacity-0 pointer-events-none shadow-card transition-opacity">
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
       </section>
     </main>
 

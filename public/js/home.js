@@ -80,17 +80,24 @@
     const nextBtn = document.getElementById("categoriasNext");
     const scrollAmount = () => Math.round(grid.clientWidth * 0.8);
     function actualizarFlechas() {
+      // En mobile ya se desliza con el dedo, las flechas solo van en desktop.
+      const esMobile = window.innerWidth < 640;
       const max = grid.scrollWidth - grid.clientWidth - 4;
-      prevBtn.style.opacity = grid.scrollLeft <= 4 ? "0" : "1";
-      prevBtn.style.pointerEvents = grid.scrollLeft <= 4 ? "none" : "auto";
-      nextBtn.style.opacity = grid.scrollLeft >= max ? "0" : "1";
-      nextBtn.style.pointerEvents = grid.scrollLeft >= max ? "none" : "auto";
+      const puedeVolver = !esMobile && grid.scrollLeft > 4;
+      const puedeAvanzar = !esMobile && grid.scrollLeft < max;
+      prevBtn.style.opacity = puedeVolver ? "1" : "0";
+      prevBtn.style.pointerEvents = puedeVolver ? "auto" : "none";
+      nextBtn.style.opacity = puedeAvanzar ? "1" : "0";
+      nextBtn.style.pointerEvents = puedeAvanzar ? "auto" : "none";
     }
-    if (grid.scrollWidth > grid.clientWidth) {
-      prevBtn.addEventListener("click", () => grid.scrollBy({ left: -scrollAmount(), behavior: "smooth" }));
-      nextBtn.addEventListener("click", () => grid.scrollBy({ left: scrollAmount(), behavior: "smooth" }));
-      grid.addEventListener("scroll", actualizarFlechas);
-      actualizarFlechas();
-    }
+    prevBtn.addEventListener("click", () => grid.scrollBy({ left: -scrollAmount(), behavior: "smooth" }));
+    nextBtn.addEventListener("click", () => grid.scrollBy({ left: scrollAmount(), behavior: "smooth" }));
+    grid.addEventListener("scroll", actualizarFlechas);
+    window.addEventListener("resize", actualizarFlechas);
+    window.addEventListener("load", actualizarFlechas);
+    // El ancho real de la fila depende del layout de las imágenes, así que
+    // se recalcula un frame después de pintar el DOM y de nuevo cuando
+    // terminen de cargar todas las imágenes de la página.
+    requestAnimationFrame(() => requestAnimationFrame(actualizarFlechas));
   } catch (_) { /* sin datos */ }
 })();
