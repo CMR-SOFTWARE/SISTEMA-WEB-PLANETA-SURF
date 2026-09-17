@@ -125,7 +125,7 @@ window.PS = (function () {
             </div>
           </div>
         </div>
-        <p class="mt-8 border-t border-brand-line pt-4 text-meta-sm">© ${new Date().getFullYear()} ${escapeHtml(config?.nombre || "Planeta Surf")}</p>
+        <p class="mt-8 border-t border-brand-line pt-4 text-meta-sm">© ${new Date().getFullYear()} ${escapeHtml(config?.nombre || "Planeta Surf")} · Sistema desarrollado por <a href="https://www.instagram.com/cmrsoftware.sn/" target="_blank" rel="noopener" class="hover:text-brand-ink hover:underline">CMR Software Solutions</a></p>
       </div>`;
   }
 
