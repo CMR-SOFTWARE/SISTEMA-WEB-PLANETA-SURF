@@ -48,7 +48,7 @@ router.post("/admin/hero-slides", requireAdmin, imageUpload.single("imagen"), as
   try {
     const existentes = await listSlides({});
     if (existentes.length >= MAX_HERO_SLIDES) {
-      return res.status(400).json({ error: `Máximo ${MAX_HERO_SLIDES} imágenes en el hero.` });
+      return res.status(400).json({ error: `Máximo ${MAX_HERO_SLIDES} imágenes en el banner principal.` });
     }
     if (!req.file) return res.status(400).json({ error: "No se recibió imagen." });
     if (!(await validateFileMagicBytes(req.file))) return res.status(400).json({ error: "Imagen inválida. Solo JPG, PNG, WEBP." });
