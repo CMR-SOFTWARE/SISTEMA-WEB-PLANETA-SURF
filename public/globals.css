@@ -423,11 +423,20 @@ h3,
 /* Fila de banners que se desliza horizontalmente (categorías, etc.) */
 .ps-scroll-row {
   scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .ps-scroll-row::-webkit-scrollbar {
   display: none;
+}
+/* En desktop el snap pelea con el scroll suave por flechas (salto brusco
+   al asentar en el punto de snap). Ahí navegan con las flechas, no hace
+   falta snap -- solo se usa para el swipe táctil en mobile. */
+@media (min-width: 640px) {
+  .ps-scroll-row {
+    scroll-snap-type: none;
+  }
 }
 
 /* Tile de categoría — imagen con overlay + nombre */
