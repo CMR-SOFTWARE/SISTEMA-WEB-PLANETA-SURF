@@ -37,13 +37,13 @@
     const dots = document.getElementById("heroDots");
     if (slides.length) {
       gallery.innerHTML = slides.slice(0, 4).map((s) => `
-        <div class="aspect-[3/4] overflow-hidden bg-brand-mist">
+        <div class="aspect-[3/4] w-[70%] shrink-0 snap-start overflow-hidden bg-brand-mist sm:w-auto sm:shrink sm:snap-none">
           <img src="${escapeHtml(s.imagenUrl)}" alt="" class="h-full w-full object-cover" loading="lazy" />
         </div>`).join("");
       dots.innerHTML = slides.slice(0, 4).map((_, i) => `<span class="h-1.5 w-1.5 rounded-full ${i === 0 ? "bg-brand-ink" : "bg-brand-line"}"></span>`).join("");
     } else {
       gallery.innerHTML = Array.from({ length: 4 }).map(() => `
-        <div class="aspect-[3/4] border border-dashed border-brand-line bg-white/40"></div>`).join("");
+        <div class="aspect-[3/4] w-[70%] shrink-0 snap-start border border-dashed border-brand-line bg-white/40 sm:w-auto sm:shrink sm:snap-none"></div>`).join("");
       const caption = document.createElement("p");
       caption.className = "mt-2 text-center text-meta-sm";
       caption.textContent = "Cargá imágenes del hero desde el panel admin";
