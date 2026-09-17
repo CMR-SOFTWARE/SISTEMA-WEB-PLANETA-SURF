@@ -420,15 +420,28 @@ h3,
   box-shadow: var(--shadow-card);
 }
 
+/* Fila de banners que se desliza horizontalmente (categorías, etc.) */
+.ps-scroll-row {
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ps-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
 /* Tile de categoría — imagen con overlay + nombre */
 .ps-category-tile {
   position: relative;
   display: block;
+  flex: 0 0 auto;
+  width: 240px;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: var(--radius-card);
   text-decoration: none;
   color: #ffffff;
+  scroll-snap-align: start;
 }
 .ps-category-tile img {
   width: 100%;
