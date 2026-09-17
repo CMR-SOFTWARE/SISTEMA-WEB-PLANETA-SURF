@@ -78,7 +78,13 @@
 
     const prevBtn = document.getElementById("categoriasPrev");
     const nextBtn = document.getElementById("categoriasNext");
-    const scrollAmount = () => Math.round(grid.clientWidth * 0.8);
+    // Desliza de a un tile por click (mas sutil que saltar casi una pantalla entera).
+    const scrollAmount = () => {
+      const tile = grid.children[0];
+      if (!tile) return grid.clientWidth;
+      const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+      return Math.round(tile.getBoundingClientRect().width + gap);
+    };
     function actualizarFlechas() {
       // En mobile ya se desliza con el dedo, las flechas solo van en desktop.
       const esMobile = window.innerWidth < 640;
