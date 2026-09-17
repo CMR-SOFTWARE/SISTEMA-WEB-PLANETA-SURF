@@ -26,7 +26,10 @@ router.post("/admin/categorias", requireAdmin, async (req, res, next) => {
     if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio." });
     const slug = slugify(req.body?.slug) || slugify(nombre);
     if (!slug) return res.status(400).json({ error: "No se pudo generar un slug válido." });
-    const orden = Number.isFinite(Number(req.body?.orden)) ? Math.trunc(Number(req.body.orden)) : 0;
+    // El orden nunca lo tipea el admin (evita duplicados/huecos) — se calcula:
+    // siempre al final de la lista actual.
+    const existentes = await listCategorias({});
+    const orden = existentes.length ? Math.max(...existentes.map((c) => c.orden)) + 1 : 0;
 
     if (USE_SQLITE) {
       const result = await dbRun("INSERT INTO categorias (nombre, slug, orden) VALUES (?, ?, ?)", [nombre, slug, orden]);
@@ -51,14 +54,43 @@ router.put("/admin/categorias/:id", requireAdmin, async (req, res, next) => {
     const nombre = String(req.body?.nombre || "").trim().slice(0, 80);
     if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio." });
     const slug = slugify(req.body?.slug) || slugify(nombre);
-    const orden = Number.isFinite(Number(req.body?.orden)) ? Math.trunc(Number(req.body.orden)) : 0;
     const activo = req.body?.activo !== false;
 
     if (USE_SQLITE) {
-      await dbRun("UPDATE categorias SET nombre = ?, slug = ?, orden = ?, activo = ? WHERE id = ?", [nombre, slug, orden, activo ? 1 : 0, req.params.id]);
+      await dbRun("UPDATE categorias SET nombre = ?, slug = ?, activo = ? WHERE id = ?", [nombre, slug, activo ? 1 : 0, req.params.id]);
     } else if (USE_SUPABASE) {
-      const { error } = await supabase.from("categorias").update({ nombre, slug, orden, activo }).eq("id", req.params.id);
+      const { error } = await supabase.from("categorias").update({ nombre, slug, activo }).eq("id", req.params.id);
       if (error) throw new Error(error.message);
+    }
+    res.json({ ok: true });
+  } catch (error) { next(error); }
+});
+
+// Intercambia el "orden" con la categoría vecina (arriba/abajo en la lista
+// ordenada actual) — así nunca hay dos categorías con el mismo orden ni el
+// admin tiene que tipear números a mano.
+router.patch("/admin/categorias/:id/mover", requireAdmin, async (req, res, next) => {
+  try {
+    const direction = req.body?.direction;
+    if (direction !== "up" && direction !== "down") {
+      return res.status(400).json({ error: "direction tiene que ser 'up' o 'down'." });
+    }
+    const todas = await listCategorias({});
+    const idx = todas.findIndex((c) => String(c.id) === String(req.params.id));
+    if (idx === -1) return res.status(404).json({ error: "Categoría no encontrada." });
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= todas.length) return res.json({ ok: true });
+
+    const a = todas[idx];
+    const b = todas[targetIdx];
+    if (USE_SQLITE) {
+      await dbRun("UPDATE categorias SET orden = ? WHERE id = ?", [b.orden, a.id]);
+      await dbRun("UPDATE categorias SET orden = ? WHERE id = ?", [a.orden, b.id]);
+    } else if (USE_SUPABASE) {
+      const { error: e1 } = await supabase.from("categorias").update({ orden: b.orden }).eq("id", a.id);
+      if (e1) throw new Error(e1.message);
+      const { error: e2 } = await supabase.from("categorias").update({ orden: a.orden }).eq("id", b.id);
+      if (e2) throw new Error(e2.message);
     }
     res.json({ ok: true });
   } catch (error) { next(error); }

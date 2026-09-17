@@ -286,7 +286,6 @@
     catForm.reset();
     document.getElementById("catId").value = categoria?.id || "";
     document.getElementById("catNombre").value = categoria?.nombre || "";
-    document.getElementById("catOrden").value = categoria?.orden ?? 0;
     document.getElementById("catActivo").checked = categoria ? categoria.activo : true;
     document.getElementById("catMensaje").classList.add("hidden");
 
@@ -317,7 +316,6 @@
     e.preventDefault();
     const body = {
       nombre: document.getElementById("catNombre").value,
-      orden: document.getElementById("catOrden").value,
       activo: document.getElementById("catActivo").checked,
     };
     const mensaje = document.getElementById("catMensaje");
@@ -343,11 +341,14 @@
   async function loadCategorias() {
     categoriasCache = await api("/admin/categorias");
     const tbody = document.getElementById("categoriasTableBody");
-    tbody.innerHTML = categoriasCache.map((c) => `
+    tbody.innerHTML = categoriasCache.map((c, i) => `
       <tr class="border-t border-border">
         <td class="p-3">${escapeHtml(c.nombre)}</td>
         <td class="p-3">${escapeHtml(c.slug)}</td>
-        <td class="p-3">${c.orden}</td>
+        <td class="p-3">
+          <button data-mover="${c.id}" data-dir="up" ${i === 0 ? "disabled" : ""} class="disabled:opacity-30" title="Subir">▲</button>
+          <button data-mover="${c.id}" data-dir="down" ${i === categoriasCache.length - 1 ? "disabled" : ""} class="disabled:opacity-30" title="Bajar">▼</button>
+        </td>
         <td class="p-3"><span class="badge-${c.activo ? "success" : "neutral"} rounded px-2 py-0.5 text-xs">${c.activo ? "Activa" : "Inactiva"}</span></td>
         <td class="p-3">
           <button data-edit="${c.id}" class="text-sm underline">Editar</button>
@@ -360,6 +361,10 @@
     tbody.querySelectorAll("[data-delete]").forEach((btn) => btn.addEventListener("click", async () => {
       if (!confirm("¿Eliminar esta categoría? Los productos que la usan quedarán sin categoría.")) return;
       await api(`/admin/categorias/${btn.dataset.delete}`, { method: "DELETE" });
+      loadCategorias();
+    }));
+    tbody.querySelectorAll("[data-mover]").forEach((btn) => btn.addEventListener("click", async () => {
+      await api(`/admin/categorias/${btn.dataset.mover}/mover`, { method: "PATCH", body: JSON.stringify({ direction: btn.dataset.dir }) });
       loadCategorias();
     }));
   }
