@@ -108,24 +108,24 @@ window.PS = (function () {
     const el = document.querySelector("[data-footer]");
     if (!el) return;
     el.innerHTML = `
-      <div class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6">
-        <div class="grid gap-8 sm:grid-cols-3">
+      <div class="mx-auto max-w-[1440px] px-4 py-6 sm:px-6">
+        <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:gap-x-20 sm:gap-y-4">
           <div>
             <div class="font-display text-sm font-black uppercase">${escapeHtml(config?.nombre || "Planeta Surf")}</div>
-            <p class="mt-2 text-meta">${escapeHtml(config?.direccion || "")}</p>
+            <p class="mt-1 text-meta">${escapeHtml(config?.direccion || "")}</p>
           </div>
           <div>
             <div class="text-h3">Horarios</div>
-            <p class="mt-2 text-meta">${escapeHtml(config?.horarioTexto || "")}</p>
+            <p class="mt-1 text-meta">${escapeHtml(config?.horarioTexto || "")}</p>
           </div>
           <div>
             <div class="text-h3">Seguinos</div>
-            <div class="mt-2 flex gap-3">
+            <div class="mt-1 flex gap-3">
               ${config?.instagramUrl ? `<a href="${escapeHtml(config.instagramUrl)}" target="_blank" rel="noopener" class="text-meta hover:text-brand-ink">Instagram</a>` : ""}
             </div>
           </div>
         </div>
-        <p class="mt-8 border-t border-brand-line pt-4 text-meta-sm">© ${new Date().getFullYear()} ${escapeHtml(config?.nombre || "Planeta Surf")} · Sistema desarrollado por <a href="https://www.instagram.com/cmrsoftware.sn/" target="_blank" rel="noopener" class="hover:text-brand-ink hover:underline">CMR Software Solutions</a></p>
+        <p class="mt-4 border-t border-brand-line pt-3 text-meta-sm">© ${new Date().getFullYear()} ${escapeHtml(config?.nombre || "Planeta Surf")} · Sistema desarrollado por <a href="https://www.instagram.com/cmrsoftware.sn/" target="_blank" rel="noopener" class="hover:text-brand-ink hover:underline">CMR Software Solutions</a></p>
       </div>`;
   }
 

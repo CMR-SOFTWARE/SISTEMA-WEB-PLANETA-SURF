@@ -114,6 +114,10 @@
   // guardar para no pisarlos con el PUT del resto de los campos.
   let productoActualMostrarEnHome = false;
   let productoActualOrdenHome = null;
+  // Para un producto nuevo todavía no hay id donde subir la imagen, así
+  // que se guardan en memoria (con preview local) y se suben recién
+  // cuando se crea el producto, junto con el resto del guardado.
+  let imagenesEnEspera = [];
 
   function fillCategoriaSelect(select, selectedId) {
     select.innerHTML = '<option value="">Sin categoría</option>' +
@@ -181,20 +185,44 @@
     productoActualOrdenHome = producto?.ordenHome ?? null;
     document.getElementById("prodMensaje").classList.add("hidden");
 
-    const imagenesSection = document.getElementById("prodImagenesSection");
-    const imagenesHint = document.getElementById("prodImagenesHint");
+    document.getElementById("prodImagenesSection").classList.remove("hidden");
+    document.getElementById("prodImagenesHint").classList.add("hidden");
+    imagenesEnEspera.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+    imagenesEnEspera = [];
     if (producto?.id) {
-      imagenesSection.classList.remove("hidden");
-      imagenesHint.classList.add("hidden");
       renderProductoImagenes(producto);
     } else {
-      imagenesSection.classList.add("hidden");
-      imagenesHint.classList.remove("hidden");
+      renderImagenesEnEspera();
     }
     prodForm.classList.remove("hidden");
     prodForm.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // Wiring genérico del input + dropzone: junta los archivos elegidos
+  // (click o drag&drop) y los pasa a onFiles, sea para subir ya (producto
+  // existente) o para guardarlos en espera (producto nuevo, sin id todavía).
+  function wireDropzone(onFiles) {
+    const dropZone = document.getElementById("prodImagenesDropzone");
+    dropZone.replaceWith(dropZone.cloneNode(true)); // saca listeners de drag&drop viejos
+    const freshDropZone = document.getElementById("prodImagenesDropzone");
+    document.getElementById("prodImagenInput").onchange = async (e) => {
+      await onFiles([...e.target.files].filter((f) => f.type.startsWith("image/")));
+      e.target.value = "";
+    };
+    ["dragenter", "dragover"].forEach((evt) => freshDropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      freshDropZone.classList.add("border-brand-ink", "bg-brand-mist");
+    }));
+    ["dragleave", "drop"].forEach((evt) => freshDropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      freshDropZone.classList.remove("border-brand-ink", "bg-brand-mist");
+    }));
+    freshDropZone.addEventListener("drop", async (e) => {
+      await onFiles([...(e.dataTransfer?.files || [])].filter((f) => f.type.startsWith("image/")));
+    });
+  }
+
+  // ---- Producto existente: cada imagen se sube al toque ----
   function renderProductoImagenes(producto) {
     const list = document.getElementById("prodImagenesList");
     const imagenes = [];
@@ -234,9 +262,7 @@
     });
 
     async function subirImagenProducto(file) {
-      // Previsualización instantánea con el archivo local, mientras se sube.
       const previewUrl = URL.createObjectURL(file);
-      const list = document.getElementById("prodImagenesList");
       const tempTile = document.createElement("div");
       tempTile.className = "w-24";
       tempTile.innerHTML = `
@@ -262,29 +288,35 @@
 
     // Sube de a una (no en paralelo: el server decide "es la principal?"
     // mirando el estado actual, subir varias a la vez pisaría esa lógica).
-    async function subirVariasImagenesProducto(files) {
-      for (const file of files) {
-        if (!file.type.startsWith("image/")) continue;
-        await subirImagenProducto(file);
-      }
-    }
+    wireDropzone(async (files) => {
+      for (const file of files) await subirImagenProducto(file);
+    });
+  }
 
-    document.getElementById("prodImagenInput").onchange = async (e) => {
-      await subirVariasImagenesProducto([...e.target.files]);
-      e.target.value = "";
-    };
-
-    const dropZone = document.getElementById("prodImagenesDropzone");
-    ["dragenter", "dragover"].forEach((evt) => dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      dropZone.classList.add("border-brand-ink", "bg-brand-mist");
-    }));
-    ["dragleave", "drop"].forEach((evt) => dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      dropZone.classList.remove("border-brand-ink", "bg-brand-mist");
-    }));
-    dropZone.addEventListener("drop", async (e) => {
-      await subirVariasImagenesProducto([...(e.dataTransfer?.files || [])]);
+  // ---- Producto nuevo: no hay id todavía, se guardan en memoria con
+  // preview local y se suben recién al crear el producto ----
+  function renderImagenesEnEspera() {
+    const list = document.getElementById("prodImagenesList");
+    list.innerHTML = imagenesEnEspera.map((img, i) => `
+      <div class="relative w-24">
+        <div class="aspect-square overflow-hidden border ${i === 0 ? "border-brand-ink" : "border-border"}">
+          <img src="${img.previewUrl}" class="h-full w-full object-cover" />
+        </div>
+        <div class="mt-1 flex flex-col gap-0.5 text-center text-[10px]">
+          ${i === 0 ? '<span class="font-semibold">Principal</span>' : ""}
+          <button type="button" data-quitar-espera="${i}" class="text-danger underline">Eliminar</button>
+        </div>
+      </div>`).join("");
+    list.querySelectorAll("[data-quitar-espera]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const [removida] = imagenesEnEspera.splice(Number(btn.dataset.quitarEspera), 1);
+        URL.revokeObjectURL(removida.previewUrl);
+        renderImagenesEnEspera();
+      });
+    });
+    wireDropzone(async (files) => {
+      files.forEach((file) => imagenesEnEspera.push({ file, previewUrl: URL.createObjectURL(file) }));
+      renderImagenesEnEspera();
     });
   }
 
@@ -312,7 +344,21 @@
       if (prodFields.id.value) {
         await api(`/admin/productos/${prodFields.id.value}`, { method: "PUT", body: JSON.stringify(body) });
       } else {
-        await api("/admin/productos", { method: "POST", body: JSON.stringify(body) });
+        if (!imagenesEnEspera.length) {
+          showMensaje(mensaje, "Subí al menos una imagen del producto.", "error");
+          return;
+        }
+        const fd = new FormData();
+        Object.entries(body).forEach(([key, value]) => fd.append(key, value));
+        fd.append("imagen", imagenesEnEspera[0].file);
+        const creado = await api("/admin/productos", { method: "POST", body: fd });
+        for (const img of imagenesEnEspera.slice(1)) {
+          const fd2 = new FormData();
+          fd2.append("imagen", img.file);
+          await api(`/admin/productos/${creado.id}/imagenes`, { method: "POST", body: fd2 });
+        }
+        imagenesEnEspera.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+        imagenesEnEspera = [];
       }
       await loadProductos();
       prodForm.classList.add("hidden");

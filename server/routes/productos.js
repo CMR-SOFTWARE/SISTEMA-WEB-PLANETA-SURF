@@ -203,11 +203,16 @@ function validateProductoBody(p) {
   return null;
 }
 
-router.post("/admin/productos", requireAdmin, async (req, res, next) => {
+// La imagen principal es obligatoria al crear -- viaja en el mismo
+// request (multipart) junto con el resto de los campos, así no hay
+// forma de terminar con un producto sin foto.
+router.post("/admin/productos", requireAdmin, imageUpload.single("imagen"), async (req, res, next) => {
   try {
     const parsed = parseProductoBody(req.body);
     const errorMsg = validateProductoBody(parsed);
     if (errorMsg) return res.status(400).json({ error: errorMsg });
+    if (!req.file) return res.status(400).json({ error: "Subí al menos una imagen del producto." });
+    if (!(await validateFileMagicBytes(req.file))) return res.status(400).json({ error: "Imagen inválida. Solo JPG, PNG, WEBP." });
 
     if (USE_SQLITE) {
       const result = await dbRun(
@@ -217,6 +222,8 @@ router.post("/admin/productos", requireAdmin, async (req, res, next) => {
           parsed.destacado ? 1 : 0, parsed.mostrarEnHome ? 1 : 0, parsed.ordenHome, parsed.disponible ? 1 : 0, parsed.stock,
           JSON.stringify(parsed.talles), parsed.promocionTipo, parsed.promocionValor, parsed.promocionTitulo]
       );
+      const imagenUrl = await uploadImage("productos", `prod_${result.lastID}_principal`, req.file);
+      await dbRun("UPDATE productos SET imagen_principal = ? WHERE id = ?", [imagenUrl, result.lastID]);
       const row = await dbGet("SELECT * FROM productos WHERE id = ?", [result.lastID]);
       return res.status(201).json(mapProductoRow(row, await getCategoriasById()));
     }
@@ -242,6 +249,10 @@ router.post("/admin/productos", requireAdmin, async (req, res, next) => {
         if (isMissingTableError(error)) return res.status(409).json({ error: MISSING_TABLE_MSG });
         throw new Error(error.message);
       }
+      const imagenUrl = await uploadImage("productos", `prod_${data.id}_principal`, req.file);
+      const { error: imgError } = await supabase.from("productos").update({ imagen_principal: imagenUrl }).eq("id", data.id);
+      if (imgError) throw new Error(imgError.message);
+      data.imagen_principal = imagenUrl;
       return res.status(201).json(mapProductoRow(data, await getCategoriasById()));
     }
     return res.status(501).json({ error: "No disponible en este entorno." });

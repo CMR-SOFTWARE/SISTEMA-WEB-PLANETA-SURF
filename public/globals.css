@@ -470,3 +470,20 @@ h3,
   bottom: 1rem;
   z-index: 1;
 }
+
+/* Fila de Destacados — cards de ancho fijo para que entren en una sola
+   fila con scroll horizontal, en vez de wrappear a varias filas. */
+.ps-destacados-row > .ps-product-card {
+  flex: 0 0 auto;
+  width: 160px;
+}
+@media (min-width: 640px) {
+  .ps-destacados-row > .ps-product-card {
+    width: 200px;
+  }
+}
+@media (min-width: 1024px) {
+  .ps-destacados-row > .ps-product-card {
+    width: 220px;
+  }
+}
