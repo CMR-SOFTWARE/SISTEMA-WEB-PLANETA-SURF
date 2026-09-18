@@ -118,6 +118,14 @@
       categoriasCache.map((c) => `<option value="${c.id}" ${String(c.id) === String(selectedId) ? "selected" : ""}>${escapeHtml(c.nombre)}</option>`).join("");
   }
 
+  // Stock en 0 fuerza "sin stock" (mismo criterio que el server) — se
+  // refleja en el checkbox para que no quede una combinación inconsistente.
+  prodFields.stock.addEventListener("input", () => {
+    const sinStock = prodFields.stock.value === "0";
+    prodFields.disponible.disabled = sinStock;
+    if (sinStock) prodFields.disponible.checked = false;
+  });
+
   prodFields.mostrarHome.addEventListener("change", () => {
     prodFields.ordenHomeWrap.classList.toggle("hidden", !prodFields.mostrarHome.checked);
   });
@@ -158,6 +166,7 @@
     prodFields.descripcion.value = producto?.descripcion || "";
     prodFields.precio.value = producto?.precio ?? "";
     prodFields.stock.value = producto?.stock ?? "";
+    prodFields.disponible.disabled = producto?.stock === 0;
     const tienePromo = Boolean(producto?.promocionTipo);
     prodFields.tienePromocion.checked = tienePromo;
     prodFields.promocionCampos.classList.toggle("hidden", !tienePromo);

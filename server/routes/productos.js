@@ -175,8 +175,10 @@ function parseProductoBody(body = {}) {
   const mostrarEnHome = body.mostrarEnHome === true || body.mostrarEnHome === "true";
   const ordenHomeRaw = body.ordenHome;
   const ordenHome = mostrarEnHome && ordenHomeRaw !== "" && ordenHomeRaw != null ? Math.trunc(Number(ordenHomeRaw)) : null;
-  const disponible = body.disponible !== false && body.disponible !== "false";
   const stock = body.stock === "" || body.stock == null ? null : Math.max(0, Math.trunc(Number(body.stock) || 0));
+  // Si hay control de stock y está en 0, el producto queda sin stock sin
+  // importar el checkbox "Disponible" (evita el error de dejarlo tildado).
+  const disponible = stock === 0 ? false : (body.disponible !== false && body.disponible !== "false");
   const talles = parseListInput(body.talles);
 
   const tienePromocion = body.tienePromocion === true || body.tienePromocion === "true";
