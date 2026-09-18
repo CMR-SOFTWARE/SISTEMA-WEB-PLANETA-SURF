@@ -291,6 +291,59 @@ router.put("/admin/productos/:id", requireAdmin, async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+// Prende/apaga "mostrar en home" para un producto desde el panel de
+// Contenido Home, sin tener que reenviar el formulario completo. Al
+// prenderlo se asigna automaticamente al final del orden actual.
+router.patch("/admin/productos/:id/mostrar-home", requireAdmin, async (req, res, next) => {
+  try {
+    const mostrarEnHome = req.body?.mostrarEnHome === true;
+    let ordenHome = null;
+    if (mostrarEnHome) {
+      const todos = await fetchAllProductos();
+      const enHome = todos.filter((p) => p.mostrarEnHome);
+      ordenHome = enHome.length ? Math.max(...enHome.map((p) => p.ordenHome ?? 0)) + 1 : 0;
+    }
+    if (USE_SQLITE) {
+      await dbRun("UPDATE productos SET mostrar_en_home = ?, orden_home = ? WHERE id = ?", [mostrarEnHome ? 1 : 0, ordenHome, req.params.id]);
+    } else if (USE_SUPABASE) {
+      const { error } = await supabase.from("productos").update({ mostrar_en_home: mostrarEnHome, orden_home: ordenHome }).eq("id", req.params.id);
+      if (error) throw new Error(error.message);
+    }
+    res.json({ ok: true, mostrarEnHome, ordenHome });
+  } catch (error) { next(error); }
+});
+
+// Intercambia el orden_home con el producto vecino (misma logica que
+// /admin/categorias/:id/mover), para reordenar los destacados de Home
+// con flechas en vez de tipear numeros.
+router.patch("/admin/productos/:id/mover-home", requireAdmin, async (req, res, next) => {
+  try {
+    const direction = req.body?.direction;
+    if (direction !== "up" && direction !== "down") {
+      return res.status(400).json({ error: "direction tiene que ser 'up' o 'down'." });
+    }
+    const todos = await fetchAllProductos();
+    const enHome = todos.filter((p) => p.mostrarEnHome).sort((a, b) => (a.ordenHome ?? 0) - (b.ordenHome ?? 0));
+    const idx = enHome.findIndex((p) => String(p.id) === String(req.params.id));
+    if (idx === -1) return res.status(404).json({ error: "Producto no encontrado en Home." });
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= enHome.length) return res.json({ ok: true });
+
+    const a = enHome[idx];
+    const b = enHome[targetIdx];
+    if (USE_SQLITE) {
+      await dbRun("UPDATE productos SET orden_home = ? WHERE id = ?", [b.ordenHome, a.id]);
+      await dbRun("UPDATE productos SET orden_home = ? WHERE id = ?", [a.ordenHome, b.id]);
+    } else if (USE_SUPABASE) {
+      const { error: e1 } = await supabase.from("productos").update({ orden_home: b.ordenHome }).eq("id", a.id);
+      if (e1) throw new Error(e1.message);
+      const { error: e2 } = await supabase.from("productos").update({ orden_home: a.ordenHome }).eq("id", b.id);
+      if (e2) throw new Error(e2.message);
+    }
+    res.json({ ok: true });
+  } catch (error) { next(error); }
+});
+
 router.delete("/admin/productos/:id", requireAdmin, async (req, res, next) => {
   try {
     if (USE_SQLITE) {

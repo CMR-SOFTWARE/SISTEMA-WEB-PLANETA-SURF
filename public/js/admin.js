@@ -433,7 +433,37 @@
     document.getElementById("beneficio2Subtitulo").value = config.beneficio2Subtitulo || "";
     document.getElementById("beneficio3Titulo").value = config.beneficio3Titulo || "";
     document.getElementById("beneficio3Subtitulo").value = config.beneficio3Subtitulo || "";
+    await loadProductosHome();
     await loadHeroSlides();
+  }
+
+  async function loadProductosHome() {
+    const productos = await api("/admin/productos");
+    const enHome = productos.filter((p) => p.mostrarEnHome).sort((a, b) => (a.ordenHome ?? 0) - (b.ordenHome ?? 0));
+    const resto = productos.filter((p) => !p.mostrarEnHome);
+    const ordenados = [...enHome, ...resto];
+    const list = document.getElementById("productosHomeList");
+    list.innerHTML = ordenados.map((p, i) => {
+      const posEnHome = enHome.findIndex((h) => h.id === p.id);
+      return `
+      <div class="flex items-center gap-3 py-2">
+        <input type="checkbox" data-toggle-home="${p.id}" ${p.mostrarEnHome ? "checked" : ""} />
+        <span class="flex-1 text-sm">${escapeHtml(p.nombre)}</span>
+        ${p.mostrarEnHome ? `
+          <button data-mover-home="${p.id}" data-dir="up" ${posEnHome === 0 ? "disabled" : ""} class="disabled:opacity-30" title="Subir">▲</button>
+          <button data-mover-home="${p.id}" data-dir="down" ${posEnHome === enHome.length - 1 ? "disabled" : ""} class="disabled:opacity-30" title="Bajar">▼</button>
+        ` : ""}
+      </div>`;
+    }).join("");
+
+    list.querySelectorAll("[data-toggle-home]").forEach((cb) => cb.addEventListener("change", async () => {
+      await api(`/admin/productos/${cb.dataset.toggleHome}/mostrar-home`, { method: "PATCH", body: JSON.stringify({ mostrarEnHome: cb.checked }) });
+      loadProductosHome();
+    }));
+    list.querySelectorAll("[data-mover-home]").forEach((btn) => btn.addEventListener("click", async () => {
+      await api(`/admin/productos/${btn.dataset.moverHome}/mover-home`, { method: "PATCH", body: JSON.stringify({ direction: btn.dataset.dir }) });
+      loadProductosHome();
+    }));
   }
 
   document.getElementById("btnGuardarBeneficios").addEventListener("click", async () => {
