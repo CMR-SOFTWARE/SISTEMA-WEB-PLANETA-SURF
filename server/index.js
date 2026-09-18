@@ -58,7 +58,10 @@ app.use("/api", (req, res, next) => {
 
 app.use(express.json());
 app.use("/uploads", express.static(UPLOADS_DIR));
-app.use(express.static(path.join(ROOT_DIR, "public")));
+// index:false -- si no, express.static sirve "/" con su propio
+// index.html crudo (sin el ?v= de cache-busting) antes de llegar a la
+// ruta de abajo que sí lo inyecta.
+app.use(express.static(path.join(ROOT_DIR, "public"), { index: false }));
 
 app.use("/api", require("./routes/business"));
 app.use("/api", require("./routes/categorias"));
@@ -97,10 +100,28 @@ auditAdminRoutes();
 // ============================================================
 // PÁGINAS
 // ============================================================
-app.get("/", (_req, res) => res.sendFile(path.join(ROOT_DIR, "public", "index.html")));
-app.get("/productos", (_req, res) => res.sendFile(path.join(ROOT_DIR, "public", "productos.html")));
-app.get("/producto/:id", (_req, res) => res.sendFile(path.join(ROOT_DIR, "public", "producto.html")));
-app.get("/admin", (_req, res) => res.sendFile(path.join(ROOT_DIR, "public", "admin.html")));
+// Un navegador viejo (o un proxy/antivirus en el medio) puede no revalidar
+// bien el caché de /js/*.js entre deploys y quedarse sirviendo una copia
+// vieja para siempre -- pasó varias veces esta sesión (confundía a un
+// cliente real). En vez de confiar en que cachee bien, cada deploy tiene
+// un id distinto (el commit de Vercel, o un timestamp en local) que se
+// suma como ?v= a los scripts propios: así cada deploy pide una URL
+// nueva, que ningún caché pudo haber visto antes.
+const BUILD_ID = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) || String(Date.now());
+const pageCache = new Map();
+function sendPage(res, filename) {
+  let html = pageCache.get(filename);
+  if (!html) {
+    html = fsSync.readFileSync(path.join(ROOT_DIR, "public", filename), "utf8")
+      .replace(/(src|href)="(\/(?:js|tailwind-build\.css)[^"]*)"/g, `$1="$2?v=${BUILD_ID}"`);
+    pageCache.set(filename, html);
+  }
+  res.type("html").send(html);
+}
+app.get("/", (_req, res) => sendPage(res, "index.html"));
+app.get("/productos", (_req, res) => sendPage(res, "productos.html"));
+app.get("/producto/:id", (_req, res) => sendPage(res, "producto.html"));
+app.get("/admin", (_req, res) => sendPage(res, "admin.html"));
 
 // ============================================================
 // ERROR HANDLER
