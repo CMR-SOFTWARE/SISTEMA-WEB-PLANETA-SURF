@@ -1,12 +1,6 @@
 (async function () {
   const { fetchJson, loadConfig, renderTopbar, renderHeader, renderFooter, renderProductCard } = window.PS;
 
-  let config;
-  try { config = await loadConfig(); } catch (_) { config = {}; }
-  renderTopbar(config);
-  renderHeader(config, { active: "Productos" });
-  renderFooter(config);
-
   const els = {
     buscar: document.getElementById("fBuscar"),
     categoria: document.getElementById("fCategoria"),
@@ -22,31 +16,6 @@
     count: document.getElementById("resultadosCount"),
   };
 
-  // Categorías para el select de filtro
-  try {
-    const categorias = await fetchJson("/api/categorias");
-    els.categoria.innerHTML += categorias.map((c) => `<option value="${c.slug}">${c.nombre}</option>`).join("");
-  } catch (_) { /* sin categorías */ }
-
-  // Facetas de talle: se calculan sobre el catálogo completo activo (sin filtrar).
-  // Mezcla talles de ropa y calzado — el admin carga lo que corresponda por producto.
-  try {
-    const todos = await fetchJson("/api/productos");
-    const ordenLetras = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-    const talles = [...new Set(todos.flatMap((p) => p.talles))].sort((a, b) => {
-      const na = Number(a), nb = Number(b);
-      if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb; // talles numéricos (calzado, pantalones)
-      const ia = ordenLetras.indexOf(a.toUpperCase());
-      const ib = ordenLetras.indexOf(b.toUpperCase());
-      if (ia !== -1 && ib !== -1) return ia - ib; // talles de letra (ropa)
-      return a.localeCompare(b);
-    });
-    if (talles.length) {
-      els.talleWrap.classList.remove("hidden");
-      els.talle.innerHTML += talles.map((t) => `<option value="${t}">${t}</option>`).join("");
-    }
-  } catch (_) { /* sin datos */ }
-
   function readParamsFromUrl() {
     const sp = new URLSearchParams(window.location.search);
     if (sp.get("q")) els.buscar.value = sp.get("q");
@@ -56,6 +25,14 @@
     if (sp.get("destacado") === "1") els.destacado.checked = true;
   }
   readParamsFromUrl();
+
+  // Header, filtro de categoría, facetas de talle y la grilla inicial no
+  // dependen entre sí — se piden todas en paralelo en vez de una por una.
+  const initialLoads = Promise.allSettled([
+    loadConfig(),
+    fetchJson("/api/categorias"),
+    fetchJson("/api/productos"),
+  ]);
 
   function buildQuery() {
     const params = new URLSearchParams();
@@ -108,4 +85,33 @@
   });
 
   refrescar({ updateUrl: false });
+
+  const [configResult, categoriasResult, todosResult] = await initialLoads;
+
+  const config = configResult.status === "fulfilled" ? configResult.value : {};
+  renderTopbar(config);
+  renderHeader(config, { active: "Productos" });
+  renderFooter(config);
+
+  if (categoriasResult.status === "fulfilled") {
+    els.categoria.innerHTML += categoriasResult.value.map((c) => `<option value="${c.slug}">${c.nombre}</option>`).join("");
+  }
+
+  if (todosResult.status === "fulfilled") {
+    // Facetas de talle: se calculan sobre el catálogo completo activo.
+    // Mezcla talles de ropa y calzado — el admin carga lo que corresponda por producto.
+    const ordenLetras = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+    const talles = [...new Set(todosResult.value.flatMap((p) => p.talles))].sort((a, b) => {
+      const na = Number(a), nb = Number(b);
+      if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb; // talles numéricos (calzado, pantalones)
+      const ia = ordenLetras.indexOf(a.toUpperCase());
+      const ib = ordenLetras.indexOf(b.toUpperCase());
+      if (ia !== -1 && ib !== -1) return ia - ib; // talles de letra (ropa)
+      return a.localeCompare(b);
+    });
+    if (talles.length) {
+      els.talleWrap.classList.remove("hidden");
+      els.talle.innerHTML += talles.map((t) => `<option value="${t}">${t}</option>`).join("");
+    }
+  }
 })();

@@ -1,12 +1,17 @@
 (async function () {
   const { escapeHtml, splitLines, fetchJson, loadConfig, renderTopbar, renderHeader, renderFooter, renderProductCard } = window.PS;
 
-  let config;
-  try {
-    config = await loadConfig();
-  } catch (_) {
-    config = {};
-  }
+  // Las 4 llamadas son independientes entre sí — se disparan todas juntas
+  // en vez de una despues de la otra, así el tiempo total es el de la más
+  // lenta, no la suma de las cuatro.
+  const [configResult, slidesResult, productosResult, categoriasResult] = await Promise.allSettled([
+    loadConfig(),
+    fetchJson("/api/hero-slides"),
+    fetchJson("/api/productos-home"),
+    fetchJson("/api/categorias"),
+  ]);
+
+  const config = configResult.status === "fulfilled" ? configResult.value : {};
   renderTopbar(config);
   renderHeader(config, { active: "" });
   renderFooter(config);
@@ -30,15 +35,17 @@
   document.getElementById("beneficio3Titulo").textContent = config.beneficio3Titulo || "";
   document.getElementById("beneficio3Subtitulo").textContent = config.beneficio3Subtitulo || "";
 
-  // Galería del hero
+  // Galería del hero — son las primeras fotos que ve el usuario, se cargan
+  // sin loading="lazy" (eso solo tiene sentido para contenido fuera de
+  // pantalla, acá solo agrega demora) y con fetchpriority alta.
   try {
-    const slides = await fetchJson("/api/hero-slides");
+    const slides = slidesResult.status === "fulfilled" ? slidesResult.value : [];
     const gallery = document.getElementById("heroGallery");
     const dots = document.getElementById("heroDots");
     if (slides.length) {
-      gallery.innerHTML = slides.slice(0, 4).map((s) => `
+      gallery.innerHTML = slides.slice(0, 4).map((s, i) => `
         <div class="aspect-[3/4] w-[70%] shrink-0 snap-start overflow-hidden bg-brand-mist sm:w-auto sm:shrink sm:snap-none">
-          <img src="${escapeHtml(s.imagenUrl)}" alt="" class="h-full w-full object-cover" loading="lazy" />
+          <img src="${escapeHtml(s.imagenUrl)}" alt="" class="h-full w-full object-cover" fetchpriority="${i === 0 ? "high" : "auto"}" />
         </div>`).join("");
       dots.innerHTML = slides.slice(0, 4).map((_, i) => `<span class="h-1.5 w-1.5 rounded-full ${i === 0 ? "bg-brand-ink" : "bg-brand-line"}"></span>`).join("");
     } else {
@@ -53,7 +60,7 @@
 
   // Productos destacados (mostrar en home)
   try {
-    const productos = await fetchJson("/api/productos-home");
+    const productos = productosResult.status === "fulfilled" ? productosResult.value : [];
     const grid = document.getElementById("destacadosGrid");
     const vacio = document.getElementById("destacadosVacio");
     if (productos.length) {
@@ -65,7 +72,7 @@
 
   // Categorías
   try {
-    const categorias = await fetchJson("/api/categorias");
+    const categorias = categoriasResult.status === "fulfilled" ? categoriasResult.value : [];
     const grid = document.getElementById("categoriasGrid");
     grid.innerHTML = categorias.map((c) => `
       <a href="/productos?categoria=${encodeURIComponent(c.slug)}" class="ps-category-tile">

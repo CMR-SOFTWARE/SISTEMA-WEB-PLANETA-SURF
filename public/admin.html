@@ -119,16 +119,17 @@
             <div class="flex flex-wrap gap-6">
               <label class="flex items-center gap-2 text-sm"><input id="prodDestacado" type="checkbox" /> Producto destacado</label>
               <label class="flex items-center gap-2 text-sm"><input id="prodDisponible" type="checkbox" checked /> Disponible</label>
-              <label class="flex items-center gap-2 text-sm"><input id="prodMostrarHome" type="checkbox" /> Mostrar en Home</label>
-              <div id="prodOrdenHomeWrap" class="hidden flex items-center gap-2 text-sm">
-                Orden en Home: <input id="prodOrdenHome" type="number" min="0" class="w-20 border border-border px-2 py-1 text-sm" />
-              </div>
             </div>
+            <p class="text-meta-sm">¿Aparece en la Home? Eso se controla desde <strong>Contenido Home → Productos en Home</strong>.</p>
 
             <div id="prodImagenesSection" class="hidden">
               <label class="text-sm font-medium">Imágenes</label>
               <div id="prodImagenesList" class="mt-2 flex flex-wrap gap-3"></div>
-              <input id="prodImagenInput" type="file" accept="image/*" class="mt-2 text-sm" />
+              <div id="prodImagenesDropzone" class="mt-2 flex flex-col items-center gap-2 border-2 border-dashed border-border p-4 text-center transition-colors">
+                <label for="prodImagenInput" class="btn-primary inline-flex cursor-pointer">Cargar imágenes</label>
+                <p class="text-meta-sm">O arrastrá una o varias fotos acá</p>
+              </div>
+              <input id="prodImagenInput" type="file" accept="image/*" multiple class="hidden" />
               <p class="text-meta-sm mt-1">La primera imagen es la principal. Subí una y elegí "Marcar como principal" para cambiarla.</p>
             </div>
             <p id="prodImagenesHint" class="text-meta-sm">Guardá el producto para poder subir imágenes.</p>
@@ -166,7 +167,8 @@
             <div id="catImagenSection" class="hidden">
               <label class="text-sm font-medium">Imagen (tile de la Home)</label>
               <div id="catImagenPreview" class="mt-2 h-32 w-32 overflow-hidden border border-border"></div>
-              <input id="catImagenInput" type="file" accept="image/*" class="mt-2 text-sm" />
+              <label for="catImagenInput" class="btn-primary mt-2 inline-flex cursor-pointer">Cargar imagen</label>
+              <input id="catImagenInput" type="file" accept="image/*" class="hidden" />
             </div>
             <p id="catImagenHint" class="text-meta-sm">Guardá la categoría para poder subir la imagen.</p>
             <p id="catMensaje" class="hidden text-sm"></p>
@@ -242,7 +244,8 @@
           <div class="ds-card space-y-3 p-4">
             <div class="text-h3">Imágenes del banner principal (galería, máx. 4)</div>
             <div id="heroSlidesList" class="flex flex-wrap gap-3"></div>
-            <input id="heroSlideInput" type="file" accept="image/*" class="text-sm" />
+            <label for="heroSlideInput" class="btn-primary inline-flex cursor-pointer">Cargar imagen</label>
+            <input id="heroSlideInput" type="file" accept="image/*" class="hidden" />
           </div>
         </section>
 
@@ -281,7 +284,8 @@
             <div>
               <label class="text-sm font-medium">Logo</label>
               <div id="cfgLogoPreview" class="mt-2 flex h-16 w-32 items-center justify-center overflow-hidden border border-border"></div>
-              <input id="cfgLogoInput" type="file" accept="image/*" class="mt-2 text-sm" />
+              <label for="cfgLogoInput" class="btn-primary mt-2 inline-flex cursor-pointer">Cargar imagen</label>
+              <input id="cfgLogoInput" type="file" accept="image/*" class="hidden" />
             </div>
             <p id="cfgMensaje" class="hidden text-sm"></p>
             <button type="submit" class="btn-primary">Guardar cambios</button>

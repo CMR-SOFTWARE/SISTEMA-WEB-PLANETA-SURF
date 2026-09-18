@@ -108,10 +108,12 @@
     talles: document.getElementById("prodTalles"),
     destacado: document.getElementById("prodDestacado"),
     disponible: document.getElementById("prodDisponible"),
-    mostrarHome: document.getElementById("prodMostrarHome"),
-    ordenHomeWrap: document.getElementById("prodOrdenHomeWrap"),
-    ordenHome: document.getElementById("prodOrdenHome"),
   };
+  // "Mostrar en Home" y su orden ya no se editan en este formulario (se
+  // manejan desde Contenido Home), pero hay que reenviarlos tal cual al
+  // guardar para no pisarlos con el PUT del resto de los campos.
+  let productoActualMostrarEnHome = false;
+  let productoActualOrdenHome = null;
 
   function fillCategoriaSelect(select, selectedId) {
     select.innerHTML = '<option value="">Sin categoría</option>' +
@@ -124,10 +126,6 @@
     const sinStock = prodFields.stock.value === "0";
     prodFields.disponible.disabled = sinStock;
     if (sinStock) prodFields.disponible.checked = false;
-  });
-
-  prodFields.mostrarHome.addEventListener("change", () => {
-    prodFields.ordenHomeWrap.classList.toggle("hidden", !prodFields.mostrarHome.checked);
   });
 
   function actualizarPreviewPromocion() {
@@ -179,9 +177,8 @@
     prodFields.talles.value = (producto?.talles || []).join(", ");
     prodFields.destacado.checked = Boolean(producto?.destacado);
     prodFields.disponible.checked = producto ? producto.disponible : true;
-    prodFields.mostrarHome.checked = Boolean(producto?.mostrarEnHome);
-    prodFields.ordenHomeWrap.classList.toggle("hidden", !producto?.mostrarEnHome);
-    prodFields.ordenHome.value = producto?.ordenHome ?? "";
+    productoActualMostrarEnHome = Boolean(producto?.mostrarEnHome);
+    productoActualOrdenHome = producto?.ordenHome ?? null;
     document.getElementById("prodMensaje").classList.add("hidden");
 
     const imagenesSection = document.getElementById("prodImagenesSection");
@@ -236,17 +233,59 @@
       });
     });
 
+    async function subirImagenProducto(file) {
+      // Previsualización instantánea con el archivo local, mientras se sube.
+      const previewUrl = URL.createObjectURL(file);
+      const list = document.getElementById("prodImagenesList");
+      const tempTile = document.createElement("div");
+      tempTile.className = "w-24";
+      tempTile.innerHTML = `
+        <div class="aspect-square overflow-hidden border border-border opacity-60">
+          <img src="${previewUrl}" class="h-full w-full object-cover" />
+        </div>
+        <div class="mt-1 text-center text-[10px] text-secondary">Subiendo…</div>`;
+      list.appendChild(tempTile);
+      try {
+        const fd = new FormData();
+        fd.append("imagen", file);
+        const data = await api(`/admin/productos/${producto.id}/imagenes`, { method: "POST", body: fd });
+        producto.imagenPrincipal = data.imagenPrincipal;
+        producto.imagenesAdicionales = data.imagenesAdicionales;
+        renderProductoImagenes(producto);
+      } catch (error) {
+        tempTile.remove();
+        alert(error.message);
+      } finally {
+        URL.revokeObjectURL(previewUrl);
+      }
+    }
+
+    // Sube de a una (no en paralelo: el server decide "es la principal?"
+    // mirando el estado actual, subir varias a la vez pisaría esa lógica).
+    async function subirVariasImagenesProducto(files) {
+      for (const file of files) {
+        if (!file.type.startsWith("image/")) continue;
+        await subirImagenProducto(file);
+      }
+    }
+
     document.getElementById("prodImagenInput").onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const fd = new FormData();
-      fd.append("imagen", file);
-      const data = await api(`/admin/productos/${producto.id}/imagenes`, { method: "POST", body: fd });
-      producto.imagenPrincipal = data.imagenPrincipal;
-      producto.imagenesAdicionales = data.imagenesAdicionales;
-      renderProductoImagenes(producto);
+      await subirVariasImagenesProducto([...e.target.files]);
       e.target.value = "";
     };
+
+    const dropZone = document.getElementById("prodImagenesDropzone");
+    ["dragenter", "dragover"].forEach((evt) => dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.add("border-brand-ink", "bg-brand-mist");
+    }));
+    ["dragleave", "drop"].forEach((evt) => dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("border-brand-ink", "bg-brand-mist");
+    }));
+    dropZone.addEventListener("drop", async (e) => {
+      await subirVariasImagenesProducto([...(e.dataTransfer?.files || [])]);
+    });
   }
 
   prodForm.addEventListener("submit", async (e) => {
@@ -264,8 +303,8 @@
       talles: prodFields.talles.value,
       destacado: prodFields.destacado.checked,
       disponible: prodFields.disponible.checked,
-      mostrarEnHome: prodFields.mostrarHome.checked,
-      ordenHome: prodFields.mostrarHome.checked ? prodFields.ordenHome.value : "",
+      mostrarEnHome: productoActualMostrarEnHome,
+      ordenHome: productoActualOrdenHome ?? "",
       stock: prodFields.stock.value,
     };
     const mensaje = document.getElementById("prodMensaje");
@@ -348,10 +387,16 @@
       document.getElementById("catImagenInput").onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const fd = new FormData();
-        fd.append("imagen", file);
-        const data = await api(`/admin/categorias/${categoria.id}/imagen`, { method: "PATCH", body: fd });
-        preview.innerHTML = `<img src="${escapeHtml(data.imagenUrl)}" class="h-full w-full object-cover" />`;
+        const previewUrl = URL.createObjectURL(file);
+        preview.innerHTML = `<img src="${previewUrl}" class="h-full w-full object-cover opacity-60" />`;
+        try {
+          const fd = new FormData();
+          fd.append("imagen", file);
+          const data = await api(`/admin/categorias/${categoria.id}/imagen`, { method: "PATCH", body: fd });
+          preview.innerHTML = `<img src="${escapeHtml(data.imagenUrl)}" class="h-full w-full object-cover" />`;
+        } finally {
+          URL.revokeObjectURL(previewUrl);
+        }
       };
     } else {
       imgSection.classList.add("hidden");
@@ -519,15 +564,26 @@
   document.getElementById("heroSlideInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const fd = new FormData();
-    fd.append("imagen", file);
+    const previewUrl = URL.createObjectURL(file);
+    const list = document.getElementById("heroSlidesList");
+    const tempTile = document.createElement("div");
+    tempTile.className = "w-24";
+    tempTile.innerHTML = `
+      <div class="aspect-[3/4] overflow-hidden border border-border opacity-60"><img src="${previewUrl}" class="h-full w-full object-cover" /></div>
+      <div class="mt-1 text-center text-[10px] text-secondary">Subiendo…</div>`;
+    list.appendChild(tempTile);
     try {
+      const fd = new FormData();
+      fd.append("imagen", file);
       await api("/admin/hero-slides", { method: "POST", body: fd });
       loadHeroSlides();
     } catch (error) {
+      tempTile.remove();
       alert(error.message);
+    } finally {
+      URL.revokeObjectURL(previewUrl);
+      e.target.value = "";
     }
-    e.target.value = "";
   });
 
   // ============================================================
@@ -566,15 +622,20 @@
   document.getElementById("cfgLogoInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    const logoPreview = document.getElementById("cfgLogoPreview");
+    logoPreview.innerHTML = `<img src="${previewUrl}" class="h-full w-full object-contain opacity-60" />`;
     const fd = new FormData();
     fd.append("logo", file);
     try {
       const data = await api("/admin/logo", { method: "PATCH", body: fd });
-      document.getElementById("cfgLogoPreview").innerHTML = `<img src="${escapeHtml(data.logoUrl)}" class="h-full w-full object-contain" />`;
+      logoPreview.innerHTML = `<img src="${escapeHtml(data.logoUrl)}" class="h-full w-full object-contain" />`;
     } catch (error) {
       alert(error.message);
+    } finally {
+      URL.revokeObjectURL(previewUrl);
+      e.target.value = "";
     }
-    e.target.value = "";
   });
 
   document.getElementById("formPassword").addEventListener("submit", async (e) => {
