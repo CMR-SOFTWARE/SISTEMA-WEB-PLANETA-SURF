@@ -15,12 +15,12 @@ router.post("/admin/login", async (req, res, next) => {
   try {
     const password = String(req.body?.password || "");
     const rateKey = getClientIp(req);
-    if (!checkLoginRateLimit(rateKey)) {
+    if (!(await checkLoginRateLimit(rateKey))) {
       return res.status(429).json({ error: "Demasiados intentos. Esperá unos minutos y volvé a intentar." });
     }
     const ok = await verifyAdminPassword(password);
     if (!ok) return res.status(401).json({ error: "Contraseña incorrecta." });
-    resetLoginRateLimit(rateKey);
+    await resetLoginRateLimit(rateKey);
     res.json({ token: createAdminSession() });
   } catch (error) { next(error); }
 });

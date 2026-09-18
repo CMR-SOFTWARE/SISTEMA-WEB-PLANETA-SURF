@@ -102,6 +102,16 @@ async function initSqliteSchema() {
     )
   `);
 
+  // Rate limit de login persistido en DB -- en memoria no sirve en
+  // serverless porque cada cold start arranca con un Map vacío.
+  await dbRun(`
+    CREATE TABLE IF NOT EXISTS login_attempts (
+      ip_key TEXT PRIMARY KEY,
+      count INTEGER NOT NULL DEFAULT 1,
+      reset_at INTEGER NOT NULL
+    )
+  `);
+
   await dbRun(`
     CREATE TABLE IF NOT EXISTS categorias (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

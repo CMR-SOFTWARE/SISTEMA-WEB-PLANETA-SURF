@@ -52,6 +52,14 @@ create table if not exists admin_credentials (
   updated_at timestamptz not null default now()
 );
 
+-- Rate limit de login persistido en DB (no en memoria: en serverless cada
+-- cold start arranca con memoria nueva y un límite en RAM deja de servir).
+create table if not exists login_attempts (
+  ip_key text primary key,
+  count integer not null default 1,
+  reset_at bigint not null
+);
+
 -- ------------------------------------------------------------
 -- 2) Categorías
 -- ------------------------------------------------------------
@@ -115,6 +123,7 @@ create index if not exists idx_productos_home on productos (mostrar_en_home, ord
 
 alter table business disable row level security;
 alter table admin_credentials disable row level security;
+alter table login_attempts disable row level security;
 alter table categorias disable row level security;
 alter table hero_slides disable row level security;
 alter table productos disable row level security;

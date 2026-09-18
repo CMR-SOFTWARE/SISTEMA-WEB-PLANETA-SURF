@@ -12,27 +12,48 @@ const ADMIN_SCRYPT_OPTS = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
 
 const LOGIN_MAX_ATTEMPTS = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const loginAttempts = new Map();
 
 function getClientIp(req) {
   return (req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown")
     .split(",")[0].trim();
 }
 
-function checkLoginRateLimit(key) {
+// Persistido en DB, no en memoria: en serverless (Vercel) cada cold start
+// arranca con memoria nueva, así que un Map en RAM deja de limitar nada
+// apenas el proceso se recicla. Sin DB no hay forma de loguearse igual
+// (verifyAdminPassword también la necesita), así que ahí se falla abierto.
+async function checkLoginRateLimit(key) {
   const now = Date.now();
-  const entry = loginAttempts.get(key);
-  if (!entry || now > entry.resetAt) {
-    loginAttempts.set(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+  if (USE_SQLITE) {
+    const row = await dbGet("SELECT count, reset_at FROM login_attempts WHERE ip_key = ?", [key]);
+    if (!row || now > row.reset_at) {
+      await dbRun(
+        `INSERT INTO login_attempts (ip_key, count, reset_at) VALUES (?, 1, ?)
+         ON CONFLICT(ip_key) DO UPDATE SET count = 1, reset_at = excluded.reset_at`,
+        [key, now + LOGIN_WINDOW_MS]
+      );
+      return true;
+    }
+    if (row.count >= LOGIN_MAX_ATTEMPTS) return false;
+    await dbRun("UPDATE login_attempts SET count = count + 1 WHERE ip_key = ?", [key]);
     return true;
   }
-  if (entry.count >= LOGIN_MAX_ATTEMPTS) return false;
-  entry.count++;
+  if (USE_SUPABASE) {
+    const { data: row } = await supabase.from("login_attempts").select("count, reset_at").eq("ip_key", key).maybeSingle();
+    if (!row || now > Number(row.reset_at)) {
+      await supabase.from("login_attempts").upsert({ ip_key: key, count: 1, reset_at: now + LOGIN_WINDOW_MS });
+      return true;
+    }
+    if (row.count >= LOGIN_MAX_ATTEMPTS) return false;
+    await supabase.from("login_attempts").update({ count: row.count + 1 }).eq("ip_key", key);
+    return true;
+  }
   return true;
 }
 
-function resetLoginRateLimit(key) {
-  loginAttempts.delete(key);
+async function resetLoginRateLimit(key) {
+  if (USE_SQLITE) await dbRun("DELETE FROM login_attempts WHERE ip_key = ?", [key]);
+  else if (USE_SUPABASE) await supabase.from("login_attempts").delete().eq("ip_key", key);
 }
 
 function timingSafeEqualString(a, b) {

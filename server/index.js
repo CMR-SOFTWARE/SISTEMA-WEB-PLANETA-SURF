@@ -12,11 +12,31 @@ const { ROOT_DIR, UPLOADS_DIR, USE_SQLITE, initSqliteSchema } = require("./db");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Todo el sitio es same-origin (scripts/estilos propios, sin CDNs) salvo
+// las imágenes, que viven en Supabase Storage -- por eso img-src suma
+// ese host aparte y el resto queda cerrado a 'self'.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self' data: https://*.supabase.co",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
 app.use((_req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Content-Security-Policy", CSP);
+  // Vercel ya fuerza HTTPS; este header refuerza que el navegador nunca
+  // intente HTTP de entrada, ni siquiera en el primer request.
+  res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   next();
 });
 
