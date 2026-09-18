@@ -117,16 +117,20 @@ create index if not exists idx_productos_categoria on productos (categoria_id);
 create index if not exists idx_productos_home on productos (mostrar_en_home, orden_home);
 
 -- ------------------------------------------------------------
--- 5) RLS — deshabilitado, la seguridad vive en el middleware admin de
---    Express con la service key (igual que en la plataforma original).
+-- 5) RLS — habilitado sin policies (deniega todo a anon/authenticated).
+--    El server usa la service_role key, que ignora RLS por diseño de
+--    Supabase, así que esto no cambia el funcionamiento de la app; solo
+--    evita que la anon key (pública) pueda leer o escribir algo si
+--    alguna vez se usa o se filtra. La seguridad real de las rutas
+--    sigue viviendo en el middleware requireAdmin de Express.
 -- ------------------------------------------------------------
 
-alter table business disable row level security;
-alter table admin_credentials disable row level security;
-alter table login_attempts disable row level security;
-alter table categorias disable row level security;
-alter table hero_slides disable row level security;
-alter table productos disable row level security;
+alter table business enable row level security;
+alter table admin_credentials enable row level security;
+alter table login_attempts enable row level security;
+alter table categorias enable row level security;
+alter table hero_slides enable row level security;
+alter table productos enable row level security;
 
 -- ------------------------------------------------------------
 -- 6) Seed

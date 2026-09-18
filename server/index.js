@@ -8,6 +8,7 @@ const multer = require("multer");
 const fsSync = require("fs");
 
 const { ROOT_DIR, UPLOADS_DIR, USE_SQLITE, initSqliteSchema } = require("./db");
+const { requireAdmin } = require("./auth");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -64,6 +65,34 @@ app.use("/api", require("./routes/categorias"));
 app.use("/api", require("./routes/hero"));
 app.use("/api", require("./routes/productos"));
 app.use("/api", require("./routes/admin-auth"));
+
+// Red de contención contra el riesgo real de RLS deshabilitado: como
+// service_role ignora RLS, la única defensa contra "una ruta admin nueva
+// se olvidó el requireAdmin" es verificarlo en código. Esto recorre las
+// rutas ya registradas y, si encuentra una mutación bajo /admin sin el
+// middleware, hace fallar el arranque en vez de exponerla en silencio.
+function auditAdminRoutes() {
+  const sinProteger = [];
+  const MUTATING = new Set(["post", "put", "patch", "delete"]);
+  (function walk(stack) {
+    for (const layer of stack) {
+      if (layer.route) {
+        const routePath = layer.route.path;
+        const methods = Object.keys(layer.route.methods).filter((m) => MUTATING.has(m));
+        if (!methods.length || routePath === "/admin/login") continue;
+        if (routePath.startsWith("/admin") && !layer.route.stack.some((l) => l.handle === requireAdmin)) {
+          sinProteger.push(`${methods.join(",").toUpperCase()} ${routePath}`);
+        }
+      } else if (layer.name === "router" && layer.handle?.stack) {
+        walk(layer.handle.stack);
+      }
+    }
+  })(app._router.stack);
+  if (sinProteger.length) {
+    throw new Error(`[security] Rutas admin sin requireAdmin: ${sinProteger.join(", ")}`);
+  }
+}
+auditAdminRoutes();
 
 // ============================================================
 // PÁGINAS
