@@ -40,9 +40,18 @@ app.use((_req, res, next) => {
   next();
 });
 
-app.use("/api", (_req, res, next) => {
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-  res.setHeader("Pragma", "no-cache");
+app.use("/api", (req, res, next) => {
+  // Todo /api quedaba con no-store, incluidos los GET públicos de
+  // catálogo (config/categorias/hero/productos) -- eso obliga a pegarle
+  // a Supabase de cero en cada F5, que es la causa del delay reportado.
+  // Lo admin (mutaciones y login) sigue sin cachear nunca; lo público de
+  // solo lectura se cachea unos segundos (browser + edge de Vercel).
+  if (req.method === "GET" && !req.path.startsWith("/admin")) {
+    res.setHeader("Cache-Control", "public, max-age=20, stale-while-revalidate=120");
+  } else {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+  }
   next();
 });
 
