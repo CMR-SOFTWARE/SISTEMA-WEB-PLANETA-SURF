@@ -11,12 +11,15 @@
       headers["Content-Type"] = "application/json";
     }
     const res = await fetch(`/api${path}`, { ...options, headers });
-    if (res.status === 401) {
+    let data = null;
+    try { data = await res.json(); } catch (_) { data = null; }
+    // El login (/admin/login) también devuelve 401 cuando la contraseña
+    // está mal -- eso no es una sesión expirada, es una contraseña
+    // incorrecta, y tiene que mostrar el mensaje real del servidor.
+    if (res.status === 401 && path !== "/admin/login") {
       logout();
       throw new Error("Sesión expirada.");
     }
-    let data = null;
-    try { data = await res.json(); } catch (_) { data = null; }
     if (!res.ok) throw new Error(data?.error || `Error ${res.status}`);
     return data;
   }
