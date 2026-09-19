@@ -99,6 +99,7 @@
     categoria: document.getElementById("prodCategoria"),
     descripcion: document.getElementById("prodDescripcion"),
     precio: document.getElementById("prodPrecio"),
+    sinPrecio: document.getElementById("prodSinPrecio"),
     tienePromocion: document.getElementById("prodTienePromocion"),
     promocionCampos: document.getElementById("prodPromocionCampos"),
     promocionTipo: document.getElementById("prodPromocionTipo"),
@@ -150,6 +151,20 @@
       : "El precio de la promoción tiene que ser menor al precio normal.";
   }
 
+  // Sin precio no puede tener promoción (no hay precio base sobre el que
+  // aplicarla) -- se deshabilita el precio y se apaga/oculta la promoción.
+  function actualizarEstadoSinPrecio() {
+    const sinPrecio = prodFields.sinPrecio.checked;
+    prodFields.precio.disabled = sinPrecio;
+    prodFields.precio.required = !sinPrecio;
+    if (sinPrecio) prodFields.precio.value = "";
+    prodFields.tienePromocion.disabled = sinPrecio;
+    if (sinPrecio) prodFields.tienePromocion.checked = false;
+    prodFields.promocionCampos.classList.toggle("hidden", sinPrecio || !prodFields.tienePromocion.checked);
+    actualizarPreviewPromocion();
+  }
+  prodFields.sinPrecio.addEventListener("change", actualizarEstadoSinPrecio);
+
   prodFields.tienePromocion.addEventListener("change", () => {
     prodFields.promocionCampos.classList.toggle("hidden", !prodFields.tienePromocion.checked);
     actualizarPreviewPromocion();
@@ -169,7 +184,8 @@
     prodFields.id.value = producto?.id || "";
     prodFields.nombre.value = producto?.nombre || "";
     prodFields.descripcion.value = producto?.descripcion || "";
-    prodFields.precio.value = producto?.precio ?? "";
+    prodFields.sinPrecio.checked = Boolean(producto && producto.precio === 0);
+    prodFields.precio.value = producto && producto.precio > 0 ? producto.precio : "";
     prodFields.stock.value = producto?.stock ?? "";
     prodFields.disponible.disabled = producto?.stock === 0;
     const tienePromo = Boolean(producto?.promocionTipo);
@@ -180,6 +196,7 @@
     prodFields.promocionValor.value = producto?.promocionValor ?? "";
     prodFields.promocionTitulo.value = producto?.promocionTitulo || "";
     prodFields.promocionPreview.textContent = "";
+    actualizarEstadoSinPrecio();
     prodFields.etiqueta.value = producto?.etiqueta || "";
     prodFields.talles.value = (producto?.talles || []).join(", ");
     prodFields.destacado.checked = Boolean(producto?.destacado);
@@ -329,6 +346,7 @@
       nombre: prodFields.nombre.value,
       descripcion: prodFields.descripcion.value,
       precio: prodFields.precio.value,
+      sinPrecio: prodFields.sinPrecio.checked,
       tienePromocion: prodFields.tienePromocion.checked,
       promocionTipo: prodFields.promocionTipo.value,
       promocionValor: prodFields.promocionValor.value,
@@ -377,7 +395,7 @@
       <tr class="border-t border-border">
         <td class="p-3">${escapeHtml(p.nombre)}</td>
         <td class="p-3">${escapeHtml(p.categoria?.nombre || "—")}</td>
-        <td class="p-3">${formatPrice(p.precioPromocional ?? p.precio)}</td>
+        <td class="p-3">${p.precio === 0 ? "Consultar precio" : formatPrice(p.precioPromocional ?? p.precio)}</td>
         <td class="p-3">${p.mostrarEnHome ? "Sí" : "—"}</td>
         <td class="p-3"><span class="badge-${p.activo ? "success" : "neutral"} rounded px-2 py-0.5 text-xs">${p.activo ? "Activo" : "Inactivo"}</span></td>
         <td class="p-3">
@@ -404,7 +422,7 @@
 
   function productoToBody(p) {
     return {
-      nombre: p.nombre, descripcion: p.descripcion, precio: p.precio,
+      nombre: p.nombre, descripcion: p.descripcion, precio: p.precio, sinPrecio: p.precio === 0,
       tienePromocion: Boolean(p.promocionTipo), promocionTipo: p.promocionTipo || "porcentaje",
       promocionValor: p.promocionValor ?? "", promocionTitulo: p.promocionTitulo || "",
       categoriaId: p.categoriaId ?? "", etiqueta: p.etiqueta || "", talles: (p.talles || []).join(","),

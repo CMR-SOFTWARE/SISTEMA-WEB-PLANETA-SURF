@@ -168,7 +168,10 @@ router.get("/admin/productos", requireAdmin, async (_req, res, next) => {
 function parseProductoBody(body = {}) {
   const nombre = String(body.nombre || "").trim().slice(0, 120);
   const descripcion = String(body.descripcion || "").trim().slice(0, 1000);
-  const precio = Number(body.precio);
+  // "Sin precio" (a consultar) se guarda como precio=0 -- no hace falta
+  // una columna nueva, un precio real nunca puede ser 0.
+  const sinPrecio = body.sinPrecio === true || body.sinPrecio === "true";
+  const precio = sinPrecio ? 0 : Number(body.precio);
   const categoriaId = body.categoriaId === "" || body.categoriaId == null ? null : Number(body.categoriaId);
   const etiqueta = String(body.etiqueta || "").trim().slice(0, 40) || null;
   const destacado = body.destacado === true || body.destacado === "true";
@@ -181,7 +184,8 @@ function parseProductoBody(body = {}) {
   const disponible = stock === 0 ? false : (body.disponible !== false && body.disponible !== "false");
   const talles = parseListInput(body.talles);
 
-  const tienePromocion = body.tienePromocion === true || body.tienePromocion === "true";
+  // Sin precio no puede tener promoción (no hay precio base sobre el que aplicarla).
+  const tienePromocion = !sinPrecio && (body.tienePromocion === true || body.tienePromocion === "true");
   const promocionTipo = tienePromocion && (body.promocionTipo === "porcentaje" || body.promocionTipo === "precio_fijo")
     ? body.promocionTipo : null;
   const promocionValorRaw = body.promocionValor;
@@ -189,12 +193,12 @@ function parseProductoBody(body = {}) {
     ? Number(promocionValorRaw) : null;
   const promocionTitulo = tienePromocion ? (String(body.promocionTitulo || "").trim().slice(0, 60) || null) : null;
 
-  return { nombre, descripcion, precio, categoriaId, etiqueta, destacado, mostrarEnHome, ordenHome, disponible, stock, talles, promocionTipo, promocionValor, promocionTitulo };
+  return { nombre, descripcion, precio, sinPrecio, categoriaId, etiqueta, destacado, mostrarEnHome, ordenHome, disponible, stock, talles, promocionTipo, promocionValor, promocionTitulo };
 }
 
 function validateProductoBody(p) {
   if (!p.nombre || p.nombre.length < 2) return "El nombre es obligatorio.";
-  if (!(p.precio > 0)) return "El precio tiene que ser mayor a 0.";
+  if (!p.sinPrecio && !(p.precio > 0)) return "El precio tiene que ser mayor a 0.";
   if (p.promocionTipo) {
     if (!(p.promocionValor > 0)) return "El valor de la promoción tiene que ser mayor a 0.";
     if (p.promocionTipo === "porcentaje" && p.promocionValor >= 100) return "El porcentaje de descuento tiene que ser menor a 100.";

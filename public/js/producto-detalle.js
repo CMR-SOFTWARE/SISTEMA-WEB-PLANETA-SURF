@@ -30,9 +30,11 @@
   }
 
   const tienePromo = producto.precioPromocional != null && producto.precioPromocional < producto.precio;
-  document.getElementById("prodPrecio").innerHTML = tienePromo
-    ? `<span class="text-secondary line-through">${formatPrice(producto.precio)}</span> <span class="ml-2 font-semibold text-brand-accent">${formatPrice(producto.precioPromocional)}</span>`
-    : `<span class="font-semibold">${formatPrice(producto.precio)}</span>`;
+  document.getElementById("prodPrecio").innerHTML = producto.precio === 0
+    ? `<span class="font-semibold">Consultar precio</span>`
+    : tienePromo
+      ? `<span class="text-secondary line-through">${formatPrice(producto.precio)}</span> <span class="ml-2 font-semibold text-brand-accent">${formatPrice(producto.precioPromocional)}</span>`
+      : `<span class="font-semibold">${formatPrice(producto.precio)}</span>`;
   if (tienePromo && producto.promocionTitulo) {
     const tituloEl = document.createElement("p");
     tituloEl.className = "mt-1 text-sm font-semibold text-brand-accent";

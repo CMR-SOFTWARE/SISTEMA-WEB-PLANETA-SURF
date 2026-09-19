@@ -31,9 +31,11 @@ window.PS = (function () {
   }
 
   function productoWhatsAppMessage(producto) {
-    const precio = producto.precioPromocional ?? producto.precio;
+    // precio === 0 es el producto "sin precio" (a consultar) -- no tiene
+    // sentido mandarle a WhatsApp "$0".
+    const precioTexto = producto.precio === 0 ? "Consultar precio" : formatPrice(producto.precioPromocional ?? producto.precio);
     const url = `${window.location.origin}/producto/${producto.id}`;
-    return `Hola! Quiero consultar por este producto:\n${producto.nombre} - ${formatPrice(precio)}\n${url}`;
+    return `Hola! Quiero consultar por este producto:\n${producto.nombre} - ${precioTexto}\n${url}`;
   }
 
   async function loadConfig() {
@@ -136,6 +138,7 @@ window.PS = (function () {
   }
 
   function productoPrecioHtml(producto) {
+    if (producto.precio === 0) return `<span class="font-semibold">Consultar precio</span>`;
     const tienePromo = producto.precioPromocional != null && producto.precioPromocional < producto.precio;
     if (!tienePromo) return `<span class="font-semibold">${formatPrice(producto.precio)}</span>`;
     return `
